@@ -1,0 +1,223 @@
+{
+  "attachment" : [
+    {
+      "key" :   "atttrc1",
+      "label" : "Scroll",
+      "value" : "scroll"
+    },
+    {
+      "key" :   "atttrc2",
+      "label" : "Fixed (to entire page)",
+      "value" : "fixed"
+    },
+    {
+      "key" :   "atttrc3",
+      "label" : "Local (fixed to this element)",
+      "value" : "local"
+    }
+  ],
+  "blends" :     [
+    {
+      "key" :   "bgblnd1",
+      "label" : "None",
+      "value" : ""
+    },
+    {
+      "key" :   "bgblnd2",
+      "label" : "Color",
+      "value" : "color"
+    },
+    {
+      "key" :   "bgblnd3",
+      "label" : "Color Burn",
+      "value" : "color-burn"
+    },
+    {
+      "key" :   "bgblnd4",
+      "label" : "Color Dodge",
+      "value" : "color-dodge"
+    },
+    {
+      "key" :   "bgblnd5",
+      "label" : "Darken",
+      "value" : "darken"
+    },
+    {
+      "key" :   "bgblnd6",
+      "label" : "Difference",
+      "value" : "difference"
+    },
+    {
+      "key" :   "bgblnd7",
+      "label" : "Exclusion",
+      "value" : "exclusion"
+    },
+    {
+      "key" :   "bgblnd8",
+      "label" : "Hard Light",
+      "value" : "hard-light"
+    },
+    {
+      "key" :   "bgblnd9",
+      "label" : "Hue",
+      "value" : "hue"
+    },
+    {
+      "key" :   "bgblnda",
+      "label" : "Lighten",
+      "value" : "lighten"
+    },
+    {
+      "key" :   "bgblndb",
+      "label" : "Luminosity",
+      "value" : "luminosity"
+    },
+    {
+      "key" :   "bgblndc",
+      "label" : "Multiply",
+      "value" : "multiply"
+    },
+    {
+      "key" :   "bgblndd",
+      "label" : "Overlay",
+      "value" : "overlay"
+    },
+    {
+      "key" :   "bgblnde",
+      "label" : "Saturation",
+      "value" : "saturation"
+    },
+    {
+      "key" :   "bgblndf",
+      "label" : "Screen",
+      "value" : "screen"
+    },
+    {
+      "key" :   "bgblndg",
+      "label" : "Soft Light",
+      "value" : "soft-light"
+    }
+  ],
+  "colors" :     [],
+  "ghosts" :     [],
+  "ghostpos" :   [
+    {
+      "key" :   "ghostp0",
+      "label" : "Left",
+      "value" : "left"
+    },
+    {
+      "key" :   "ghostp7",
+      "label" : "Left Center",
+      "value" : "leftcenter"
+    },
+    {
+      "key" :   "ghostp1",
+      "label" : "Center",
+      "value" : "center"
+    },
+    {
+      "key" :   "ghostp8",
+      "label" : "Right Center",
+      "value" : "rightcenter"
+    },
+    {
+      "key" :   "ghostp2",
+      "label" : "Right",
+      "value" : "right"
+    }
+  ],
+  "overlay" :    [
+    {
+      "key" :   "overlay1",
+      "label" : "None",
+      "value" : ""
+    },
+    {
+      "key" :   "overlay2",
+      "label" : "Cover",
+      "value" : "cover"
+    },
+    {
+      "key" :   "overlay3",
+      "label" : "Gradient",
+      "value" : "gradient"
+    },
+    {
+      "key" :   "overlay4",
+      "label" : "Edges",
+      "value" : "edges"
+    }
+  ],
+  "repeat" :     [
+    {
+      "key" :   "r1",
+      "label" : "Repeat",
+      "value" : "repeat"
+    },
+    {
+      "key" :   "r2",
+      "label" : "None",
+      "value" : "no-repeat"
+    },
+    {
+      "key" :   "r3",
+      "label" : "Repeat Horizontally",
+      "value" : "repeat-x"
+    },
+    {
+      "key" :   "r4",
+      "label" : "Repeat Vertically",
+      "value" : "repeat-y"
+    },
+    {
+      "key" :   "r5",
+      "label" : "Repeat and Space",
+      "value" : "space"
+    },
+    {
+      "key" :   "r6",
+      "label" : "Repeat and Stretch",
+      "value" : "round"
+    }
+  ],
+  "size" :       [
+    {
+      "key" :   "size1",
+      "label" : "None",
+      "value" : ""
+    },
+    {
+      "key" :   "size2",
+      "label" : "Contain (image not cropped)",
+      "value" : "contain"
+    },
+    {
+      "key" :   "size3",
+      "label" : "Cover (cropped, covers)",
+      "value" : "cover"
+    }
+  ],
+  "start" :      [
+    {
+      "key" :   "start1",
+      "label" : "Top",
+      "value" : "top"
+    },
+    {
+      "key" :   "start2",
+      "label" : "Bottom",
+      "value" : "bottom"
+    },
+    {
+      "key" :   "start3",
+      "label" : "Left",
+      "value" : "left"
+    },
+    {
+      "key" :   "start4",
+      "label" : "Right",
+      "value" : "right"
+    }
+  ]
+}

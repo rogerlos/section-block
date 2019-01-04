@@ -1,0 +1,37 @@
+{
+  "section": {
+
+  },
+  "item": {
+
+  },
+
+  "itempaddingstyles" : [
+    {
+      "key" :   "ip1",
+      "label" : "Normal",
+      "value" : ""
+    }
+  ],
+  "itemstyles" :        [
+    {
+      "key" :   "i1",
+      "label" : "None",
+      "value" : ""
+    }
+  ],
+  "paddingstyles" :     [
+    {
+      "key" :   "p1",
+      "label" : "Normal",
+      "value" : ""
+    }
+  ],
+  "titlestyles" :       [
+    {
+      "key" :   "t1",
+      "label" : "None",
+      "value" : ""
+    }
+  ]
+}

@@ -1,0 +1,422 @@
+{
+  "bucket" : {
+    "callbacks" : {},
+    "cfg" :       {
+      "attributes" :  {
+        "alignment" :  {
+          "type" : "string"
+        },
+        "background" : {
+          "type" : "object"
+        },
+        "bTitle" :     {
+          "className" :              "sectionblock-bucket-title",
+          "keepPlaceholderOnFocus" : true,
+          "placeholder" :            "Optional title",
+          "tagName" :                "h2",
+          "multiline" :              false
+        },
+        "bDesc" :      {
+          "className" :              "sectionblock-bucket-desc",
+          "keepPlaceholderOnFocus" : true,
+          "placeholder" :            "Optional description",
+          "tagName" :                "div",
+          "multiline" :              false
+        },
+        "bItems" :     {
+          "allowed": [],
+          "keepPlaceholderOnFocus" : true,
+          "className" :              "sectionblock-bucket-items",
+          "placeholder" :            "Add items",
+          "tagName" :                "div"
+        },
+        "itemType" :   {
+          "help" :  "Select the style to be applied to all items in this bucket",
+          "label" : "Item Type",
+          "type" :  "string"
+        },
+        "itemHeader" : {
+          "help" :  "Style for optional title",
+          "label" : "Title Style",
+          "type" :  "string"
+        },
+        "itemPad" :    {
+          "help" :  "Adjusts padding of items within container.",
+          "label" : "Item Padding",
+          "type" :  "string"
+        },
+        "pad" :        {
+          "help" :  "Adjusts padding of main container.",
+          "label" : "Section Padding",
+          "type" :  "string"
+        }
+      },
+      "category" :    "sectionblock-blocks",
+      "className" :   "sectionblock-bucket",
+      "description" : "Add a \"row\" to your page, containing widgets.",
+      "icon" :        "layout",
+      "keywords" :    [],
+      "supports" :    {
+        "align" : [
+          "wide",
+          "full",
+          "center",
+          "left",
+          "right"
+        ]
+      },
+      "tagName" :     "div",
+      "title" :       "Section"
+    },
+    "desc" :      "",
+    "id" :        "bucket",
+    "includes" :  [],
+    "inspector" : {
+      "panels": {
+        "pad"     : {
+            "className"   : "sectionblock-inspector-bucket-pad",
+            "initialOpen" : false,
+            "title"       : "Padding",
+            "desc"        : "Adjust spacing around items"
+        }
+      }
+    },
+    "label" :     "",
+    "scripts" :   {
+      "script" :        [],
+      "editor_script" : [
+        {
+          "handle" :       "sectionblock-bucket",
+          "script" :       "blocks/bucket/bucket.js",
+          "dependencies" : [
+            "sectionblock-common"
+          ],
+          "version" :      "{{filemtime}}"
+        }
+      ]
+    },
+    "styles" :    {
+      "style" :        [],
+      "editor_style" : []
+    }
+  },
+  "item" :   {
+    "callbacks" : {
+      "render_callback" : "\\sectionblock\\item\\render"
+    },
+    "cfg" :       {
+      "attributes" : {
+        "itemButton" :       {
+          "className" :   "sectionblock-item-button",
+          "placeholder" : "Optional Action Button",
+          "tagName" :     "p",
+          "multiline" :   false
+        },
+        "itemLabel" :        {
+          "className" :   "sectionblock-item-label",
+          "placeholder" : "Optional Label",
+          "tagName" :     "p",
+          "multiline" :   false
+        },
+        "itemText" :         {
+          "className" :   "sectionblock-item-text",
+          "placeholder" : "Body Copy",
+          "tagName" :     "p",
+          "multiline" :   false
+        },
+        "itemTitle" :        {
+          "className" :   "sectionblock-item-title",
+          "placeholder" : "Title",
+          "tagName" :     "h4",
+          "multiline" :   false
+        },
+        "itemBackground" :   {
+          "className" : "",
+          "help" :      "",
+          "label" :     "",
+          "type" :      "object"
+        },
+        "itemImage" :        {
+          "className" : "sectionblock-item-image",
+          "label" :     "",
+          "help" :      "",
+          "type" :      "object"
+        },
+        "itemImageV" :       {
+          "className" : "sectionblock-item-image-V",
+          "label" :     "Vertical Position",
+          "help" :      "If image is cropped, adjust vertical position",
+          "options" :   [
+            {
+              "key" :   "v-top",
+              "label" : "Top",
+              "value" : "top"
+            },
+            {
+              "key" :   "v-center",
+              "label" : "Center",
+              "value" : "center"
+            },
+            {
+              "key" :   "v-bottom",
+              "label" : "Bottom",
+              "value" : "bottom"
+            }
+          ],
+          "type" :      "string"
+        },
+        "itemImageH" :       {
+          "className" : "sectionblock-item-image-H",
+          "label" :     "Horizontal Position",
+          "help" :      "If image is cropped, adjust horizontal position",
+          "options" :   [
+            {
+              "key" :   "h-left",
+              "label" : "Left",
+              "value" : "left"
+            },
+            {
+              "key" :   "h-center",
+              "label" : "Center",
+              "value" : "center"
+            },
+            {
+              "key" :   "h-right",
+              "label" : "Right",
+              "value" : "right"
+            }
+          ],
+          "type" :      "string"
+        },
+        "itemImageOverlay" : {
+          "className" : "sectionblock-item-image-overlay",
+          "help" :      "",
+          "label" :     "Use overlay gradient from Customizer",
+          "type" :      "boolean"
+        },
+        "itemLink" :         {
+          "className" : "sectionblock-item-link",
+          "help" :      "",
+          "label" :     "Permalink",
+          "type" :      "string"
+        },
+        "itemLinkNew" :      {
+          "className" : "sectionblock-item-link-new",
+          "help" :      "",
+          "label" :     "Open in new tab",
+          "type" :      "boolean"
+        },
+        "itemLinkTitle" :    {
+          "className" : "sectionblock-item-link-title",
+          "help" :      "",
+          "label" :     "Remove link from title",
+          "type" :      "boolean"
+        },
+        "itemLinkImage" :    {
+          "className" : "sectionblock-item-link-image",
+          "help" :      "",
+          "label" :     "Remove link from image (if available)",
+          "type" :      "boolean"
+        },
+        "itemLinkLabel" :    {
+          "className" : "sectionblock-item-link-label",
+          "help" :      "",
+          "label" :     "Remove link from label",
+          "type" :      "boolean"
+        },
+        "itemLockTitle" :    {
+          "className" : "sectionblock-item-lock-title",
+          "label" :     "Always use current title",
+          "help" :      "",
+          "type" :      "boolean"
+        },
+        "itemLockImage" :    {
+          "className" : "sectionblock-item-lock-image",
+          "label" :     "Always use current featured image",
+          "help" :      "",
+          "type" :      "boolean"
+        },
+        "itemLockText" :     {
+          "className" : "sectionblock-item-lock-text",
+          "label" :     "Always use current excerpt",
+          "help" :      "",
+          "type" :      "boolean"
+        },
+        "itemLockLabel" :    {
+          "className" : "sectionblock-item-lock-label",
+          "label" :     "Always use current category",
+          "help" :      "",
+          "type" :      "boolean"
+        },
+        "itemLockLink" :     {
+          "className" : "sectionblock-item-lock-link",
+          "label" :     "Always use current permalink",
+          "help" :      "",
+          "type" :      "boolean"
+        },
+        "itemPost" :         {
+          "className" : "sectionblock-item-post",
+          "label" :     "Select a Post",
+          "help" :      "",
+          "type" :      "string"
+        },
+        "itemPostContent" :  {
+          "className" : "",
+          "help" :      "",
+          "label" :     "",
+          "type" :      "object"
+        }
+      },
+      "category" :    "sectionblock-blocks",
+      "className" :   "sectionblock-item",
+      "description" : "A widget-like block featuring post or other content",
+      "icon" :        "star-filled",
+      "keywords" :    [],
+      "supports" :    {},
+      "tagName" :     "div",
+      "title" :       "Featured Content"
+    },
+    "desc" :      "",
+    "id" :        "item",
+    "includes" :  [],
+    "inspector" : {
+      "panels": {
+        "select"     : {
+            "className"   : "sectionblock-inspector-select-post",
+            "initialOpen" : false,
+            "title"       : "Select Post",
+            "desc"        : "Choose a post whose content to import to this item."
+        },
+        "wp"     : {
+            "className"   : "sectionblock-inspector-wp-post",
+            "initialOpen" : false,
+            "title"       : "Selected Post's Content",
+            "desc"        : "As displayed on the site."
+        },
+        "image"  : {
+            "className"   : "sectionblock-inspector-image",
+            "initialOpen" : false,
+            "title"       : "Image",
+            "desc"        : "Image displayed in the widget. Usually the post thumbnail."
+        },
+        "link"   : {
+            "className"   : "sectionblock-inspector-link",
+            "initialOpen" : false,
+            "title"       : "Links To",
+            "desc"        : "This is normally the post's permalink and should not be changed without good reason."
+        },
+        "linked" : {
+            "className"   : "sectionblock-inspector-linked",
+            "initialOpen" : false,
+            "title"       : "Clickable Elements",
+            "desc"        : "Change which elements are linked. (Buttons are always linked.)"
+        },
+        "lock"   : {
+            "className"   : "sectionblock-inspector-lock",
+            "initialOpen" : false,
+            "title"      : "Edit Post Content",
+            "desc"        : "If you lock a field, edits are not saved. Locking will overwrite any custom content with the post-based content!"
+        }
+      },
+      "struct": {
+        "wrap"       : {
+            "tagName"   : "div",
+            "className" : "sectionblock-item"
+        },
+        "inner"      : {
+            "tagName"   : "div",
+            "className" : "sectionblock-main-inner"
+        },
+        "imageWrap"  : {
+            "tagName"   : "div",
+            "className" : "sectionblock-main-inner-image"
+        },
+        "imageInner" : {
+            "tagName"   : "span",
+            "className" : "sectionblock-main-inner-image-inner"
+        },
+        "image"      : {
+            "tagName"   : "img",
+            "className" : "sectionblock-main-inner-image-img",
+            "src"       : "",
+            "alt"       : ""
+        },
+        "text"       : {
+            "tagName"   : "div",
+            "className" : "sectionblock-main-inner-text"
+        },
+        "headline"   : {
+            "tagName"   : "div",
+            "className" : "sectionblock-main-inner-text-headline"
+        },
+        "label"      : {
+            "tagName"   : "div",
+            "className" : "sectionblock-main-inner-text-label"
+        },
+        "excerpt"    : {
+            "tagName"   : "div",
+            "className" : "sectionblock-main-inner-text-excerpt"
+        },
+        "button"     : {
+            "tagName"   : "div",
+            "className" : "sectionblock-main-inner-text-button"
+        }
+      },
+      "wp": {
+        "title"     : {
+            "className" : "sectionblock-item-post-wp-title",
+            "label"     : "Title",
+            "dynamic"   : "title",
+            "lock"      : "itemLockTitle",
+            "item"      : "itemTitle"
+        },
+       "excerpt"   : {
+            "className" : "sectionblock-item-post-wp-excerpt",
+            "label"     : "Excerpt",
+            "dynamic"   : "excerpt",
+            "lock"      : "itemLockText",
+            "item"      : "itemText"
+        },
+        "category"  : {
+            "className" : "sectionblock-item-post-wp-category",
+            "label"     : "Category",
+            "dynamic"   : "category",
+            "lock"      : "itemLockLabel",
+            "item"      : "itemLabel"
+        },
+        "img"       : {
+            "className" : "sectionblock-item-post-wp-image",
+            "label"     : "Image",
+           "dynamic"   : "img",
+            "lock"      : "itemLockImage",
+            "item"      : "itemImage"
+        },
+        "permalink" : {
+            "className" : "sectionblock-item-post-wp-link",
+            "label"     : "Link",
+            "dynamic"   : "permalink",
+            "lock"      : "itemLockLink",
+            "item"      : "itemLink"
+        }
+      }
+    },
+    "label" :     "",
+    "scripts" :   {
+      "script" :        [],
+      "editor_script" : [
+        {
+          "handle" :       "sectionblock-item",
+          "script" :       "blocks/item/item.js",
+          "dependencies" : [
+            "sectionblock-common"
+          ],
+          "version" :      "{{filemtime}}"
+        }
+      ]
+    },
+    "styles" :    {
+      "style" :        [],
+      "editor_style" : []
+    }
+  }
+}

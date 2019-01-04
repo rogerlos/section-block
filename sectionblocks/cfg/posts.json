@@ -1,0 +1,30 @@
+{
+  "types" :     [
+    "post",
+    "page"
+  ],
+  "DY" :        {
+    "key" :   "postnone",
+    "label" : "Select a Post",
+    "value" : 0
+  },
+  "emptypost" : {
+    "id" :        0,
+    "slug" :      "",
+    "type" :      "",
+    "title" :     "",
+    "img" :       {
+      "id" :  0,
+      "url" : "",
+      "alt" : ""
+    },
+    "category" :  {
+      "term" : "",
+      "slug" : "",
+      "tax" :  0,
+      "id" :   0
+    },
+    "permalink" : "",
+    "excerpt" :   ""
+  }
+}

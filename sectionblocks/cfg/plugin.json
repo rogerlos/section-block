@@ -1,0 +1,42 @@
+{
+  "image_overlay_call" : "\\sectionblock\\util\\screen",
+  "routes" :             {
+    "posts" : "/sectionblock/v1/posts",
+    "post" :  "/sectionblock/v1/post"
+  },
+  "use" :                {
+    "bucket" : {
+      "title" :       true,
+      "desc" :        false,
+      "padding" :     false,
+      "itempadding" : false,
+      "background" :  {
+        "color" :       true,
+        "colorinline" : true,
+        "ghost" :       false,
+        "image" :       true,
+        "attachment" :  true,
+        "position" :    true,
+        "size" :        true,
+        "overlay" :     true,
+        "blend" :       true,
+        "repeat" :      true
+      }
+    },
+    "item" :   {
+      "background" : {
+        "color" :       true,
+        "colorinline" : true,
+        "ghost" :       false,
+        "image" :       true,
+        "attachment" :  true,
+        "position" :    true,
+        "size" :        true,
+        "overlay" :     true,
+        "blend" :       true,
+        "repeat" :      true
+      }
+    },
+    "css" :    true
+  }
+}

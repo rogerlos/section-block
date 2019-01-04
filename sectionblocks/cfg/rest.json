@@ -1,0 +1,22 @@
+{
+  "posts" : {
+    "args" :      {},
+    "callback" :  "\\sectionblock\\rest\\callback_posts",
+    "id" :        "/posts",
+    "includes" :  [],
+    "meta" :      [],
+    "methods" :   "GET",
+    "namespace" : "sectionblock/v1",
+    "route" :     "/posts"
+  },
+  "post" :  {
+    "args" :      {},
+    "callback" :  "\\sectionblock\\rest\\callback_post",
+    "id" :        "/post/(?P<id>\\d+)",
+    "includes" :  [],
+    "meta" :      [],
+    "methods" :   "GET",
+    "namespace" : "sectionblock/v1",
+    "route" :     "/post"
+  }
+}
