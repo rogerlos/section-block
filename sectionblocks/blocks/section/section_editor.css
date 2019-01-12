@@ -1,0 +1,4 @@
+.edit-post-visual-editor .editor-block-list__block[data-type="sectionblock/section"]:not([data-align="left"]):not([data-align="right"]) {
+  clear: both; }
+
+/*# sourceMappingURL=section_editor.css.map */

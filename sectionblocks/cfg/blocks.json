@@ -1,6 +1,8 @@
 {
-  "bucket" : {
-    "callbacks" : {},
+  "section" : {
+    "callbacks" : {
+      "render_callback" : "\\sectionblock\\section\\render"
+    },
     "cfg" :       {
       "attributes" :  {
         "alignment" :  {
@@ -9,51 +11,22 @@
         "background" : {
           "type" : "object"
         },
-        "bTitle" :     {
-          "className" :              "sectionblock-bucket-title",
-          "keepPlaceholderOnFocus" : true,
-          "placeholder" :            "Optional title",
-          "tagName" :                "h2",
-          "multiline" :              false
-        },
-        "bDesc" :      {
-          "className" :              "sectionblock-bucket-desc",
-          "keepPlaceholderOnFocus" : true,
-          "placeholder" :            "Optional description",
-          "tagName" :                "div",
-          "multiline" :              false
-        },
         "bItems" :     {
           "allowed": [],
           "keepPlaceholderOnFocus" : true,
-          "className" :              "sectionblock-bucket-items",
+          "className" :              "sectionblock-section-items",
           "placeholder" :            "Add items",
           "tagName" :                "div"
         },
-        "itemType" :   {
-          "help" :  "Select the style to be applied to all items in this bucket",
-          "label" : "Item Type",
-          "type" :  "string"
-        },
-        "itemHeader" : {
-          "help" :  "Style for optional title",
-          "label" : "Title Style",
-          "type" :  "string"
-        },
-        "itemPad" :    {
-          "help" :  "Adjusts padding of items within container.",
-          "label" : "Item Padding",
-          "type" :  "string"
-        },
-        "pad" :        {
-          "help" :  "Adjusts padding of main container.",
-          "label" : "Section Padding",
+        "bClass" :   {
+          "help" :  "Optional: set style for section.",
+          "label" : "Section Style",
           "type" :  "string"
         }
       },
       "category" :    "sectionblock-blocks",
-      "className" :   "sectionblock-bucket",
-      "description" : "Add a \"row\" to your page, containing widgets.",
+      "className" :   "sectionblock-section",
+      "description" : "Add a \"section\" to your page to organize blocks.",
       "icon" :        "layout",
       "keywords" :    [],
       "supports" :    {
@@ -69,25 +42,20 @@
       "title" :       "Section"
     },
     "desc" :      "",
-    "id" :        "bucket",
-    "includes" :  [],
+    "id" :        "section",
+    "includes" :  [
+      "blocks/section/section.php"
+    ],
     "inspector" : {
-      "panels": {
-        "pad"     : {
-            "className"   : "sectionblock-inspector-bucket-pad",
-            "initialOpen" : false,
-            "title"       : "Padding",
-            "desc"        : "Adjust spacing around items"
-        }
-      }
+      "panels": {}
     },
-    "label" :     "",
+    "label" :     "Section Label",
     "scripts" :   {
       "script" :        [],
       "editor_script" : [
         {
-          "handle" :       "sectionblock-bucket",
-          "script" :       "blocks/bucket/bucket.js",
+          "handle" :       "sectionblock-section",
+          "script" :       "blocks/section/section.js",
           "dependencies" : [
             "sectionblock-common"
           ],
@@ -96,8 +64,24 @@
       ]
     },
     "styles" :    {
-      "style" :        [],
-      "editor_style" : []
+      "style" :        [
+        {
+          "handle" :       "sectionblock-section-style",
+          "script" :       "blocks/section/section.css",
+          "dependencies" : [],
+          "version" :      "{{filemtime}}"
+        }
+      ],
+      "editor_style" : [
+        {
+          "handle" :       "sectionblock-section-editor-style",
+          "script" :       "blocks/section/section_editor.css",
+          "dependencies" : [
+            "sectionblock-section-style"
+          ],
+          "version" :      "{{filemtime}}"
+        }
+      ]
     }
   },
   "item" :   {
@@ -108,7 +92,7 @@
       "attributes" : {
         "itemButton" :       {
           "className" :   "sectionblock-item-button",
-          "placeholder" : "Optional Action Button",
+          "placeholder" : "Optional \"Action Button\"",
           "tagName" :     "p",
           "multiline" :   false
         },
@@ -120,7 +104,7 @@
         },
         "itemText" :         {
           "className" :   "sectionblock-item-text",
-          "placeholder" : "Body Copy",
+          "placeholder" : "Body Copy (Excerpt)",
           "tagName" :     "p",
           "multiline" :   false
         },
@@ -265,6 +249,12 @@
           "help" :      "",
           "label" :     "",
           "type" :      "object"
+        },
+        "iClass" :   {
+          "className" : "sectionblock-item-iclass",
+          "help" :  "Optional: set style for item.",
+          "label" : "Item Style",
+          "type" :  "string"
         }
       },
       "category" :    "sectionblock-blocks",
@@ -278,7 +268,9 @@
     },
     "desc" :      "",
     "id" :        "item",
-    "includes" :  [],
+    "includes" :  [
+      "blocks/item/item.php"
+    ],
     "inspector" : {
       "panels": {
         "select"     : {
@@ -415,8 +407,24 @@
       ]
     },
     "styles" :    {
-      "style" :        [],
-      "editor_style" : []
+      "style" :        [
+        {
+          "handle" :       "sectionblock-item-style",
+          "script" :       "blocks/item/item.css",
+          "dependencies" : [],
+          "version" :      "{{filemtime}}"
+        }
+      ],
+      "editor_style" : [
+        {
+          "handle" :       "sectionblock-item-editor-style",
+          "script" :       "blocks/item/item_editor.css",
+          "dependencies" : [
+            "sectionblock-item-style"
+          ],
+          "version" :      "{{filemtime}}"
+        }
+      ]
     }
   }
 }

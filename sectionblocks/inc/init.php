@@ -7,7 +7,7 @@ namespace sectionblock;
  *
  * @param $categories
  *
- * @return mixed
+ * @return array
  */
 function block_categories( $categories ) {
 	
@@ -15,7 +15,7 @@ function block_categories( $categories ) {
 	$cats = $SBLCK->get( 'blockcategories' );
 	
 	if ( ! function_exists( 'register_block_type' ) || empty( $cats ) ) {
-		return null;
+		return $categories;
 	}
 	
 	return array_merge( $categories, $cats );
@@ -32,12 +32,14 @@ function blocks() {
 		return;
 	}
 	
+	// registers the shared JS scripts (equivalent to a component)
 	foreach ( $SBLCK->get( 'common' ) as $common ) {
 		wp_register_script(
 			$common['handle'],
 			plugins_url( $common['script'], SECTIONBLOCK_FILE ),
 			$common['dependencies'],
-			$common['version'] == '{{filemtime}}' ? filemtime( SECTIONBLOCK_PATH . $common['script'] ) : $common['version']
+			$common['version'] == '{{filemtime}}' ?
+				filemtime( SECTIONBLOCK_PATH . $common['script'] ) : $common['version']
 		);
 		if ( ! empty( $common['local'] ) ) {
 			wp_localize_script(
@@ -48,6 +50,7 @@ function blocks() {
 		}
 	}
 	
+	// adds plugin sidebars, if configured
 	foreach ( $SBLCK->get( 'sidebars' ) as $sidebar ) {
 		foreach ( $sidebar['scripts'] as $type => $scripts ) {
 			foreach ( $scripts as $script ) {
@@ -62,6 +65,7 @@ function blocks() {
 		}
 	}
 	
+	// add blocks
 	foreach ( $SBLCK->get( 'blocks' ) as $block ) {
 		
 		$register_arguments = [];
@@ -81,7 +85,7 @@ function blocks() {
 			foreach ( $styles as $key => $style ) {
 				wp_register_style(
 					$style['handle'],
-					$style['script'],
+					plugins_url( $style['script'], SECTIONBLOCK_FILE ),
 					$style['dependencies'],
 					$style['version']
 				);
@@ -97,7 +101,7 @@ function blocks() {
 }
 
 /**
- * Enqueue editor scripts
+ * Enqueue editor scripts. Checks to be sure plugin stylesheets were asked for
  */
 function editor_scripts() {
 	
@@ -112,26 +116,34 @@ function editor_scripts() {
 	}
 	
 	foreach ( $SBLCK->get( 'sidebars' ) as $sidebar ) {
+		
 		foreach ( $sidebar['scripts']['editor_script'] as $script ) {
 			wp_enqueue_script( $script['handle'] );
 		}
-		foreach ( $sidebar['styles']['editor_style'] as $style ) {
-			wp_enqueue_style( $style['handle'] );
+		
+		if ( $SBLCK->get('plugin.use.sidebar.css' ) ) {
+			foreach ( $sidebar['styles']['editor_style'] as $style ) {
+				wp_enqueue_style( $style['handle'] );
+			}
 		}
 	}
 	
-	foreach ( $SBLCK->get( 'blocks' ) as $block ) {
+	foreach ( $SBLCK->get( 'blocks' ) as $type => $block ) {
+		
 		foreach ( $block['scripts']['editor_script'] as $script ) {
 			wp_enqueue_script( $script['handle'] );
 		}
-		foreach ( $block['styles']['editor_style'] as $style ) {
-			wp_enqueue_style( $style['handle'] );
+		
+		if ( $SBLCK->get('plugin.use.' . $type . '.css' ) ) {
+			foreach ( $block['styles']['editor_style'] as $style ) {
+				wp_enqueue_style( $style['handle'] );
+			}
 		}
 	}
 }
 
 /**
- * Enqueues scripts on front end
+ * Enqueues scripts on front end. Styles can be turned off via config
  */
 function front_scripts() {
 	
@@ -141,21 +153,27 @@ function front_scripts() {
 		return;
 	}
 	
-	foreach ( $SBLCK->get( 'blocks' ) as $block ) {
+	foreach ( $SBLCK->get( 'blocks' ) as $type => $block ) {
+		
 		foreach ( $block['scripts']['script'] as $script ) {
 			wp_enqueue_script( $script['handle'] );
 		}
-		foreach ( $block['styles']['style'] as $style ) {
-			wp_enqueue_style( $style['handle'] );
+		
+		// checks to be sure the use of plugin stylesheets was desired
+		if ( $SBLCK->get('plugin.use.' . $type . '.css' ) ) {
+			foreach ( $block['styles']['style'] as $style ) {
+				wp_enqueue_style( $style['handle'] );
+			}
 		}
 	}
-	
 }
 
 /**
- * @param $id
+ * Gets post and sets useful-to-us properties on the object
  *
- * @return mixed
+ * @param string|int $id Post ID from rest controller
+ *
+ * @return object
  */
 function get_post( $id ) {
 	
@@ -170,13 +188,16 @@ function get_post( $id ) {
 	$excerpt = ! empty( $post->post_excerpt ) ?
 		$post->post_excerpt : wp_trim_words( wp_strip_all_tags( $post->post_content ) );
 	
-	return (object) [
+	$ret = (object) [
 		'id'        => $id,
 		'slug'      => $post->post_name,
 		'type'      => $post->post_type,
 		'title'     => $post->post_title,
 		'img'       => (object) [
 			'id'  => $thumb ? intval( $thumb ) : 0,
+			'thumb' => $thumb ? get_the_post_thumbnail_url( $id, 'post-thumbnail' ) : '',
+			'medium' => $thumb ? get_the_post_thumbnail_url( $id, 'medium' ) : '',
+			'large' => $thumb ? get_the_post_thumbnail_url( $id, 'large' ) : '',
 			'url' => $thumb ? get_the_post_thumbnail_url( $id ) : '',
 			'alt' => $thumb ? get_post_meta( $thumb, '_wp_attachment_image_alt', TRUE ) : '',
 		],
@@ -189,22 +210,57 @@ function get_post( $id ) {
 		'permalink' => get_the_permalink( $id ),
 		'excerpt'   => $excerpt,
 	];
+	
+	// allow filtering of object
+	return apply_filters( 'sectionblock_rest_post_object', $ret, $id );
 }
 
 /**
- * Handles any PHP includes needed
+ * Adds PHP includes as set in config.
  */
 function includes() {
 	
 	global $SBLCK;
 	
-	foreach ( $SBLCK->get() as $array ) {
-		foreach ( $array as $item ) {
-			if ( ! empty( $item['includes'] ) ) {
-				foreach ( $item['includes'] as $inc ) {
+	includes_add( $SBLCK->get() );
+}
+
+/**
+ * Recursively looks for 'includes' keys in array and includes any files listed. It can find both files relative to
+ * SECTIONBLOCK_PATH and files with the entire include path already added.
+ *
+ * [
+ *   'includes' => 'my/file.php'
+ * ]
+ *
+ * [
+ *   'includes' => [
+ *      '/path/to/my/file.php',
+ *      'my/file.php'
+ *   ]
+ * ]
+ *
+ * @param $array
+ */
+function includes_add( $array ) {
+	
+	foreach ( $array as $key => $val ) {
+		
+		if ( $key === 'includes' ) {
+			
+			$val = is_array( $val ) ? $val : [ $val ];
+			
+			foreach ( $val as $inc ) {
+				if ( file_exists( SECTIONBLOCK_PATH . $inc ) && is_file( SECTIONBLOCK_PATH . $inc ) ) {
 					include( SECTIONBLOCK_PATH . $inc );
+				} else if ( file_exists( $inc ) && is_file( $inc ) ) {
+					include( $inc );
 				}
 			}
+			
+		} else if ( is_array( $val ) ) {
+			
+			includes_add( $val );
 		}
 	}
 }

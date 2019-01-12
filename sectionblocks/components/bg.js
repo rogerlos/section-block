@@ -11,8 +11,8 @@
  * @property {Object} plugin.use
  * @property {Object} plugin.use.item
  * @property {BACKER} plugin.use.item.background
- * @property {Object} plugin.use.bucket
- * @property {BACKER} plugin.use.bucket.background
+ * @property {Object} plugin.use.section
+ * @property {BACKER} plugin.use.section.background
  */
 
 /**
@@ -114,7 +114,7 @@ function BACKGROUND() {
         this.uploader.key    = key;
         this.uploader.change = change;
 
-        let use = key === 'itemBackground' ? USE.item.background : USE.bucket.background;
+        let use = key === 'itemBackground' ? USE.item.background : USE.section.background;
 
         return (
             EL(
@@ -197,7 +197,7 @@ function BACKGROUND() {
         return EL(
             PanelBody,
             {
-                key         : 'ppabgblnd',
+                key         : 'bgblnd',
                 className   : "background-blend-wrapper",
                 title       : 'Blend',
                 initialOpen : false
@@ -443,7 +443,7 @@ function BACKGROUND() {
             EL(
                 TextControl,
                 {
-                    key      : 'ppabackgroundoverlaytc1',
+                    key      : 'backgroundoverlaytc1',
                     label    : "Transparency",
                     help     : "Number from 1 to 100, as a percentage of how transparent the overlay will be; "
                         + "gradients always use half this value as the lighter color.",
@@ -457,7 +457,7 @@ function BACKGROUND() {
             EL(
                 RadioControl,
                 {
-                    key      : 'ppabackgroundoverlaytc2',
+                    key      : 'backgroundoverlaytc2',
                     label    : "Start Position",
                     help     : "Used for gradients",
                     selected : this.overlay.start,
@@ -477,7 +477,7 @@ function BACKGROUND() {
             EL(
                 PanelBody,
                 {
-                    key         : 'ppabgposwrap',
+                    key         : 'bgposwrap',
                     className   : "background-position-wrapper",
                     title       : "Position",
                     initialOpen : false
@@ -485,7 +485,7 @@ function BACKGROUND() {
                 EL(
                     TextControl,
                     {
-                        key      : 'ppabgposwrapptc1',
+                        key      : 'bgposwrapptc1',
                         label    : "Horizontal",
                         help     : "Requires 'left', 'center', 'right' or CSS value (ex: 33%)",
                         value    : this.position.x,
@@ -498,7 +498,7 @@ function BACKGROUND() {
                 EL(
                     TextControl,
                     {
-                        key      : 'ppabgposwrapptc2',
+                        key      : 'bgposwrapptc2',
                         label    : "Vertical",
                         help     : "Requires 'top', 'center', 'bottom' or CSS value",
                         value    : this.position.y,
@@ -517,7 +517,7 @@ function BACKGROUND() {
         EL(
             PanelBody,
             {
-                key         : 'ppabackgroundrepeat1',
+                key         : 'backgroundrepeat1',
                 className   : "background-repeat-wrapper",
                 title       : "Repeat",
                 initialOpen : false
@@ -525,7 +525,7 @@ function BACKGROUND() {
             EL(
                 RadioControl,
                 {
-                    key      : 'ppabackgroundrepeat3',
+                    key      : 'backgroundrepeat3',
                     label    : "Image will...",
                     selected : this.repeat,
                     options  : this.vars.repeat,
@@ -544,7 +544,7 @@ function BACKGROUND() {
         return EL(
             PanelBody,
             {
-                key         : 'ppabackgroundsizeret',
+                key         : 'backgroundsizeret',
                 className   : "background-size-wrapper",
                 title       : "Size",
                 initialOpen : false
@@ -552,7 +552,7 @@ function BACKGROUND() {
             EL(
                 RadioControl,
                 {
-                    key      : 'ppabackgroundsizeretrc',
+                    key      : 'backgroundsizeretrc',
                     label    : "Size by Keyword",
                     selected : this.size.keyword,
                     options  : this.vars.size,
@@ -567,7 +567,7 @@ function BACKGROUND() {
             EL(
                 TextControl,
                 {
-                    key      : 'ppabackgroundsizerettc1',
+                    key      : 'backgroundsizerettc1',
                     label    : "Horizontal Size",
                     help     : "Requires legitimate CSS size value; if Vertical is not filled out, this "
                         + "value is applied to both dimensions",
@@ -581,7 +581,7 @@ function BACKGROUND() {
             EL(
                 TextControl,
                 {
-                    key      : 'ppabackgroundsizerettc2',
+                    key      : 'backgroundsizerettc2',
                     label    : "Vertical Size",
                     help     : "Requires legitimate CSS size value; not used if Horizontal is blank",
                     value    : this.size.y,

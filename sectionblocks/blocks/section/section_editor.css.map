@@ -1,0 +1,7 @@
+{
+"version": 3,
+"mappings": "AAKQ,uIAA4B;EAC1B,KAAK,EAAE,IAAI",
+"sources": ["section_editor.scss"],
+"names": [],
+"file": "section_editor.css"
+}

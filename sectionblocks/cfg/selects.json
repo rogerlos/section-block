@@ -1,35 +1,14 @@
 {
-  "section": {
-
-  },
-  "item": {
-
-  },
-
-  "itempaddingstyles" : [
+  "bClass": [
     {
-      "key" :   "ip1",
-      "label" : "Normal",
-      "value" : ""
-    }
-  ],
-  "itemstyles" :        [
-    {
-      "key" :   "i1",
+      "key" :   "s1",
       "label" : "None",
       "value" : ""
     }
   ],
-  "paddingstyles" :     [
+  "iClass": [
     {
-      "key" :   "p1",
-      "label" : "Normal",
-      "value" : ""
-    }
-  ],
-  "titlestyles" :       [
-    {
-      "key" :   "t1",
+      "key" :   "i1",
       "label" : "None",
       "value" : ""
     }

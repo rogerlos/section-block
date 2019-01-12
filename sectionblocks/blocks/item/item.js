@@ -75,15 +75,13 @@
 
 ( function ( BLOCK, ED, COMPS, EL, FETCH ) {
 
-    const { registerBlockType }                                                          = BLOCK;
-    const { Button, PanelBody, RadioControl, SelectControl, TextControl, ToggleControl } = COMPS;
-    const { InspectorControls, RichText }                                                = ED;
+    const { registerBlockType }           = BLOCK;
+    const { PanelBody, SelectControl }    = COMPS;
+    const { InspectorControls, RichText } = ED;
 
     const SB   = SBLCK.blocks.item;
     const SBA  = SB.cfg.attributes;
     const SBIS = SB.inspector.struct;
-    const SBIP = SB.inspector.panels;
-    const SBIW = SB.inspector.wp;
 
     registerBlockType( 'sectionblock/item', {
 
@@ -175,6 +173,7 @@
             let itemPostContent = typeof ( props.attributes.itemPostContent ) === 'undefined' ?
                 SBLCK_STORE[ I ].cm.emptypost : props.attributes.itemPostContent;
 
+            let iClass = props.attributes.iClass;
             let itemPost = props.attributes.itemPost;
 
             let itemLink    = props.attributes.itemLink;
@@ -198,7 +197,7 @@
                 props.attributes.itemImageH : onTextChange( 'itemImageH', 'center' );
             let itemImageOverlay = props.attributes.itemImageOverlay;
 
-            let itemBackground = typeof( props.attributes.itemBackground) === 'undefined' ?
+            let itemBackground = typeof ( props.attributes.itemBackground ) === 'undefined' ?
                 {} : props.attributes.itemBackground;
 
             let itemButton = props.attributes.itemButton;
@@ -237,12 +236,26 @@
                     EL(
                         InspectorControls,
                         {
-                            key : 'ppablocks-inspector-controls'
+                            key : 'sectionblock-inspector-controls'
                         },
                         EL(
                             PanelBody,
-                            panel_atts( 'select' ),
-                            panel_desc( 'select' ),
+                            SBLCK_STORE[ I ].cm.panel_atts( 'select', SB ),
+                            SBLCK_STORE[ I ].cm.panel_desc( 'select', SB ),
+                            EL(
+                                SelectControl,
+                                {
+                                    key       : SBA.iClass.className + SBLCK_STORE[ I ].cm.random,
+                                    className : SBA.iClass.className,
+                                    label     : SBA.iClass.label,
+                                    help      : SBA.iClass.help,
+                                    options   : SBLCK.selects.iClass,
+                                    value     : iClass,
+                                    onChange : val => {
+                                        onTextChange( 'iClass', val )
+                                    }
+                                }
+                            ),
                             EL(
                                 SelectControl,
                                 {
@@ -260,46 +273,46 @@
                         itemPost ?
                             EL(
                                 PanelBody,
-                                panel_atts( 'wp' ),
-                                panel_desc( 'wp' ),
-                                inspector_wp( 'title', onTextChange, SBLCK_STORE[ I ].cm.random, itemPostContent ),
-                                inspector_toggle( 'itemLockTitle', itemLockTitle, onToggleChange, SBLCK_STORE[ I ].cm.random ),
-                                inspector_wp( 'excerpt', onTextChange, SBLCK_STORE[ I ].cm.random, itemPostContent ),
-                                inspector_toggle( 'itemLockText', itemLockText, onToggleChange, SBLCK_STORE[ I ].cm.random ),
-                                inspector_wp( 'category', onTextChange, SBLCK_STORE[ I ].cm.random, itemPostContent ),
-                                inspector_toggle( 'itemLockLabel', itemLockLabel, onToggleChange, SBLCK_STORE[ I ].cm.random ),
-                                inspector_wp( 'permalink', onTextChange, SBLCK_STORE[ I ].cm.random, itemPostContent ),
-                                inspector_toggle( 'itemLockLink', itemLockLink, onToggleChange, SBLCK_STORE[ I ].cm.random ),
-                                inspector_wp_image( 'img', onImageChange, SBLCK_STORE[ I ].cm.random, itemPostContent ),
-                                inspector_toggle( 'itemLockImage', itemLockImage, onToggleChange, SBLCK_STORE[ I ].cm.random ),
+                                SBLCK_STORE[ I ].cm.panel_atts( 'wp', SB ),
+                                SBLCK_STORE[ I ].cm.panel_desc( 'wp', SB ),
+                                SBLCK_STORE[ I ].cm.inspector_wp( 'title', onTextChange, itemPostContent, SB ),
+                                SBLCK_STORE[ I ].cm.inspector_toggle( 'itemLockTitle', itemLockTitle, onToggleChange, SB ),
+                                SBLCK_STORE[ I ].cm.inspector_wp( 'excerpt', onTextChange, itemPostContent, SB ),
+                                SBLCK_STORE[ I ].cm.inspector_toggle( 'itemLockText', itemLockText, onToggleChange, SB ),
+                                SBLCK_STORE[ I ].cm.inspector_wp( 'category', onTextChange, itemPostContent, SB ),
+                                SBLCK_STORE[ I ].cm.inspector_toggle( 'itemLockLabel', itemLockLabel, onToggleChange, SB ),
+                                SBLCK_STORE[ I ].cm.inspector_wp( 'permalink', onTextChange, itemPostContent, SB ),
+                                SBLCK_STORE[ I ].cm.inspector_toggle( 'itemLockLink', itemLockLink, onToggleChange, SB ),
+                                SBLCK_STORE[ I ].cm.inspector_wp_image( 'img', onImageChange, itemPostContent, SB ),
+                                SBLCK_STORE[ I ].cm.inspector_toggle( 'itemLockImage', itemLockImage, onToggleChange, SB ),
                             ) : null,
                         EL(
                             PanelBody,
-                            panel_atts( 'image' ),
-                            panel_desc( 'image' ),
+                            SBLCK_STORE[ I ].cm.panel_atts( 'image', SB ),
+                            SBLCK_STORE[ I ].cm.panel_desc( 'image', SB ),
                             SBLCK_STORE[ I ].cm.image( itemImage, 'itemImage', onImageChange, 'Current Image' ),
-                            inspector_radio( 'itemImageV', itemImageV, onTextChange, SBLCK_STORE[ I ].cm.random ),
-                            inspector_radio( 'itemImageH', itemImageH, onTextChange, SBLCK_STORE[ I ].cm.random ),
-                            inspector_toggle( 'itemImageOverlay', itemImageOverlay, onToggleChange, SBLCK_STORE[ I ].cm.random ),
+                            SBLCK_STORE[ I ].cm.inspector_radio( 'itemImageV', itemImageV, onTextChange, SB ),
+                            SBLCK_STORE[ I ].cm.inspector_radio( 'itemImageH', itemImageH, onTextChange, SB ),
+                            SBLCK_STORE[ I ].cm.inspector_toggle( 'itemImageOverlay', itemImageOverlay, onToggleChange, SB ),
                         ),
                         EL(
                             PanelBody,
-                            panel_atts( 'link' ),
-                            panel_desc( 'link' ),
-                            inspector_text( 'itemLink', itemLink, onTextChange, SBLCK_STORE[ I ].cm.random ),
-                            inspector_toggle( 'itemLinkNew', itemLinkNew, onToggleChange, SBLCK_STORE[ I ].cm.random )
+                            SBLCK_STORE[ I ].cm.panel_atts( 'link', SB ),
+                            SBLCK_STORE[ I ].cm.panel_desc( 'link', SB ),
+                            SBLCK_STORE[ I ].cm.inspector_text( 'itemLink', itemLink, onTextChange, SB ),
+                            SBLCK_STORE[ I ].cm.inspector_toggle( 'itemLinkNew', itemLinkNew, onToggleChange, SB )
                         ),
                         EL(
                             PanelBody,
-                            panel_atts( 'linked' ),
-                            panel_desc( 'linked' ),
-                            inspector_toggle( 'itemLinkTitle', itemLinkTitle, onToggleChange, SBLCK_STORE[ I ].cm.random ),
-                            inspector_toggle( 'itemLinkImage', itemLinkImage, onToggleChange, SBLCK_STORE[ I ].cm.random ),
-                            inspector_toggle( 'itemLinkLabel', itemLinkLabel, onToggleChange, SBLCK_STORE[ I ].cm.random )
+                            SBLCK_STORE[ I ].cm.panel_atts( 'linked', SB ),
+                            SBLCK_STORE[ I ].cm.panel_desc( 'linked', SB ),
+                            SBLCK_STORE[ I ].cm.inspector_toggle( 'itemLinkTitle', itemLinkTitle, onToggleChange, SB ),
+                            SBLCK_STORE[ I ].cm.inspector_toggle( 'itemLinkImage', itemLinkImage, onToggleChange, SB ),
+                            SBLCK_STORE[ I ].cm.inspector_toggle( 'itemLinkLabel', itemLinkLabel, onToggleChange, SB )
                         ),
                         SBLCK_STORE[ I ].bg.inspector( 'itemBackground', onTextChange, SBLCK_STORE[ I ].bg.image )
                     ),
-                    ghost( itemBackground ),
+                    SBLCK_STORE[ I ].cm.ghost( itemBackground ),
                     EL(
                         SBIS.inner.tagName,
                         {
@@ -443,7 +456,10 @@
      * @returns {*}
      */
     function add_editor_image( itemImage ) {
-        if ( typeof ( itemImage ) === 'undefined' || typeof ( itemImage.url ) === 'undefined' || ! itemImage.url ) return null;
+
+        if ( typeof ( itemImage ) === 'undefined' || typeof ( itemImage.url ) === 'undefined' || ! itemImage.url )
+            return null;
+
         return (
             EL(
                 SBIS.image.tagName,
@@ -476,236 +492,6 @@
                     }
                 )
             }
-        )
-    }
-
-    /**
-     * Ghost function...
-     * @todo: DRY
-     *
-     * @param itemBackground
-     * @returns {*}
-     */
-    function ghost( itemBackground ) {
-
-        if ( typeof ( itemBackground ) === 'undefined' || typeof ( itemBackground.ghost ) === 'undefined' ) {
-            return null
-        }
-
-        let where = typeof ( itemBackground.ghost.pos ) === 'undefined' ? 'right' : itemBackground.ghost.pos;
-
-        if ( ! itemBackground.ghost.img ) {
-            return null
-        }
-
-        return EL(
-            'div',
-            {
-                className : 'sectionblock-ghost sectionblock-ghost-' + where
-            },
-            EL(
-                'img',
-                {
-                    src : SBLCK[ itemBackground.ghost.img ]
-                }
-            )
-        )
-    }
-
-    /**
-     * Radio control for the inspector
-     *
-     * @param key
-     * @param field
-     * @param change
-     * @param ran
-     * @returns {any}
-     */
-    function inspector_radio( key, field, change, ran ) {
-        return (
-            EL(
-                RadioControl,
-                {
-                    className : SB.cfg.attributes[ key ].className,
-                    key       : SB.cfg.attributes[ key ].className + ran,
-                    label     : SB.cfg.attributes[ key ].label,
-                    help      : SB.cfg.attributes[ key ].help,
-                    options   : SB.cfg.attributes[ key ].options,
-                    selected  : field,
-                    onChange  : val => {
-                        change( key, val );
-                    }
-                }
-            )
-        )
-    }
-
-    /**
-     * Text control to inspector
-     *
-     * @param key
-     * @param field
-     * @param change
-     * @param ran
-     * @returns {any}
-     */
-    function inspector_text( key, field, change, ran ) {
-        return (
-            EL(
-                TextControl,
-                {
-                    className : SB.cfg.attributes[ key ].className,
-                    key       : SB.cfg.attributes[ key ].className + ran,
-                    label     : SB.cfg.attributes[ key ].label,
-                    help      : SB.cfg.attributes[ key ].help,
-                    value     : field,
-                    onChange  : val => {
-                        change( key, val );
-                    }
-                }
-            )
-        )
-    }
-
-    /**
-     * Adds toggle to inspector
-     *
-     * @param key
-     * @param field
-     * @param change
-     * @param ran
-     * @returns {any}
-     */
-    function inspector_toggle( key, field, change, ran ) {
-
-        return (
-            EL(
-                ToggleControl,
-                {
-                    className : SB.cfg.attributes[ key ].className,
-                    key       : SB.cfg.attributes[ key ].className + ran,
-                    label     : SB.cfg.attributes[ key ].label,
-                    help      : SB.cfg.attributes[ key ].help,
-                    checked   : field,
-                    onChange  : checked => {
-                        change( key, checked )
-                    }
-                }
-            )
-        )
-    }
-
-    function inspector_wp( key, change, ran, post ) {
-
-        let val   = post[ SBIW[ key ].dynamic ].length ? post[ SBIW[ key ].dynamic ] : '';
-        let label = typeof ( SBIW[ key ].label ) === 'string' ? SBIW[ key ].label : '';
-
-        return (
-            EL(
-                'p',
-                {
-                    key       : 'ppablocks-wp-post-value-' + key + ran,
-                    className : 'ppablocks-wp-post-value'
-                },
-                label,
-                EL(
-                    'span',
-                    {
-                        key       : SBIW[ key ].className + ran,
-                        className : SBIW[ key ].className
-                    },
-                    val
-                ),
-                val ?
-                    EL(
-                        Button,
-                        {
-                            key       : SBIW[ key ].className + '-button' + ran,
-                            className : SBIW[ key ].className + '-button is-button',
-                            onClick   : function () {
-                                change( SBIW[ key ].item, val )
-                            }
-                        },
-                        'Copy ' + key + ' to editor'
-                    ) : null
-            )
-        )
-    }
-
-    /**
-     * Adds image to inspector
-     *
-     * @param key
-     * @param change
-     * @param ran
-     * @param post
-     * @returns {ActiveX.IXMLDOMElement}
-     */
-    function inspector_wp_image( key, change, ran, post ) {
-
-        let val   = post.img.url.length ? post.img : { id : 0, url : '', alt : '' };
-        let src   = val.url ? val.url : '';
-        let label = typeof ( SBIW[ key ].label ) === 'string' ? SBIW[ key ].label : '';
-
-        return (
-            EL(
-                'p',
-                {
-                    key       : 'ppablocks-wp-post-value-' + key + ran,
-                    className : 'ppablocks-wp-post-value'
-                },
-                label,
-                src ?
-                    EL(
-                        'img',
-                        {
-                            key       : SBIW[ key ].className + ran,
-                            className : SBIW[ key ].className,
-                            src       : src,
-                        }
-                    ) : null,
-                src ?
-                    EL(
-                        Button,
-                        {
-                            key       : SBIW[ key ].className + '-button' + ran,
-                            className : SBIW[ key ].className + '-button is-button',
-                            onClick   : function () {
-                                change( SBIW[ key ].item, val )
-                            }
-                        },
-                        'Copy image to editor'
-                    ) : null
-            )
-        )
-
-    }
-
-    /**
-     * Panel attributes
-     *
-     * @param panel
-     * @returns {{initialOpen: *, key: *, className: *, title: *}}
-     */
-    function panel_atts( panel ) {
-        return {
-            initialOpen : SBIP[ panel ].initialOpen,
-            className   : SBIP[ panel ].className,
-            title       : SBIP[ panel ].title
-        }
-    }
-
-    /**
-     * Description paragraph for the inspector
-     *
-     * @param panel
-     * @returns {ActiveX.IXMLDOMElement}
-     */
-    function panel_desc( panel ) {
-        return EL(
-            'p',
-            {},
-            SBIP[ panel ].desc
         )
     }
 

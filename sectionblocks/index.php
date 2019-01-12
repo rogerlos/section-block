@@ -2,8 +2,8 @@
 /*
 Plugin Name: Section Blocks
 Plugin URI:
-Description: Adds section and item blocks to editor
-Version: 1.3
+Description: Adds "section" and "item" blocks to editor
+Version: 1.3.1
 Author: Roger Los
 Author URI:
 License: GPL2
@@ -18,18 +18,14 @@ define( 'SECTIONBLOCK_FILE', __FILE__ );
 define( 'SECTIONBLOCK_PATH', __DIR__ . '/' );
 
 include SECTIONBLOCK_PATH . 'cfg/CFG.php';
-include SECTIONBLOCK_PATH . 'inc/background.php';
-include SECTIONBLOCK_PATH . 'inc/init.php';
-include SECTIONBLOCK_PATH . 'inc/rest.php';
-include SECTIONBLOCK_PATH . 'inc/util.php';
+include SECTIONBLOCK_PATH . 'inc/index.php';
 
-// allows themes to set JSON config, usually for "selects"
 $paths = [
 	SECTIONBLOCK_PATH . 'cfg/',
 	get_stylesheet_directory() . '/sectionblock/',
 ];
 
-$SBLCK = new \sectionblock\CFG( SECTIONBLOCK_PATH . 'cfg/' );
+$SBLCK = new \sectionblock\CFG( $paths );
 
 \sectionblock\includes();
 

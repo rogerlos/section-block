@@ -1,16 +1,12 @@
 .edit-post-visual-editor {
 
   .editor-block-list__block {
-    &[data-type="sectionblock/bucket"] {
+    &[data-type="sectionblock/section"] {
       &:not([data-align="left"]) {
         &:not([data-align="right"]) {
           clear: both;
         }
       }
     }
-  }
-
-  .sectionblock-bucket {
-
   }
 }
