@@ -149,6 +149,11 @@
       "value" : "edges"
     }
   ],
+  "overlays" :           [
+    "cover",
+    "gradient",
+    "edges"
+  ],
   "repeat" :     [
     {
       "key" :   "r1",

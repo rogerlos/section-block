@@ -1,0 +1,43 @@
+{
+  "section" :   {
+    "bClass" :     true,
+    "background" : {
+      "color" :       true,
+      "colorinline" : true,
+      "ghost" :       false,
+      "image" :       true,
+      "attachment" :  true,
+      "position" :    true,
+      "size" :        true,
+      "overlay" :     true,
+      "blend" :       true,
+      "repeat" :      true
+    },
+    "css" :        true,
+    "bFlex" :      true,
+    "use" :        true
+  },
+  "item" :      {
+    "iClass" :     true,
+    "background" : {
+      "color" :       true,
+      "colorinline" : true,
+      "ghost" :       false,
+      "image" :       true,
+      "attachment" :  true,
+      "position" :    true,
+      "size" :        true,
+      "overlay" :     true,
+      "blend" :       true,
+      "repeat" :      true
+    },
+    "css" :        true,
+    "use" :        true
+  },
+  "sidebar" :   {
+    "css" : true
+  },
+  "component" : {
+    "css" : true
+  }
+}

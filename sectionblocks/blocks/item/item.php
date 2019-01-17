@@ -10,7 +10,7 @@ function render() {
 	$atts = $args[0];
 	$id   = ! empty( $atts['id'] ) ? $atts['id'] : 0;
 	
-	$posted = intval( $id ) > 0 ? \sectionblock\get_post( $id ) : [];
+	$posted = intval( $id ) > 0 ? \sectionblock\rest\get_post( $id ) : [];
 	
 	$lock = [
 		'img'   => ! empty( $atts['itemLockImage'] ),

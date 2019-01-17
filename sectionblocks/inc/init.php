@@ -22,6 +22,22 @@ function block_categories( $categories ) {
 }
 
 /**
+ * Removes blocks disabled with 'use'
+ */
+function block_use() {
+	
+	global $SBLCK;
+	
+	$blocks = $SBLCK->get('blocks');
+
+	foreach( $blocks as $key => $cfg ) {
+		if ( ! $SBLCK->get( 'use.' . $key . '.use' ) ) {
+			$SBLCK->remove( 'blocks', $key );
+		}
+	}
+}
+
+/**
  * Registers blocks and all scripts
  */
 function blocks() {
@@ -32,65 +48,19 @@ function blocks() {
 		return;
 	}
 	
-	// registers the shared JS scripts (equivalent to a component)
-	foreach ( $SBLCK->get( 'common' ) as $common ) {
-		wp_register_script(
-			$common['handle'],
-			plugins_url( $common['script'], SECTIONBLOCK_FILE ),
-			$common['dependencies'],
-			$common['version'] == '{{filemtime}}' ?
-				filemtime( SECTIONBLOCK_PATH . $common['script'] ) : $common['version']
-		);
-		if ( ! empty( $common['local'] ) ) {
-			wp_localize_script(
-				$common['handle'],
-				$common['local']['var'],
-				$common['local']['data'] == '{{global}}' ? $SBLCK->get() : $common['local']['data']
-			);
-		}
+	// add any configured colors to the background vars colors
+	if ( ! empty( $SBLCK->get( 'colors' ) ) ) {
+		$SBLCK->set( 'background.colors', $SBLCK->get( 'colors' ) );
 	}
 	
-	// adds plugin sidebars, if configured
-	foreach ( $SBLCK->get( 'sidebars' ) as $sidebar ) {
-		foreach ( $sidebar['scripts'] as $type => $scripts ) {
-			foreach ( $scripts as $script ) {
-				wp_register_script(
-					$script['handle'],
-					plugins_url( $script['script'], SECTIONBLOCK_FILE ),
-					$script['dependencies'],
-					$script['version'] == '{{filemtime}}' ?
-						filemtime( SECTIONBLOCK_PATH . $script['script'] ) : $script['version']
-				);
-			}
-		}
-	}
+	$SCR = scripts_array( 'all' );
 	
-	// add blocks
+	register_scripts( $SCR['scripts'] );
+	register_styles( $SCR['styles'] );
+	
 	foreach ( $SBLCK->get( 'blocks' ) as $block ) {
 		
 		$register_arguments = [];
-		
-		foreach ( $block['scripts'] as $type => $scripts ) {
-			foreach ( $scripts as $key => $script ) {
-				wp_register_script(
-					$script['handle'],
-					plugins_url( $script['script'], SECTIONBLOCK_FILE ),
-					$script['dependencies'],
-					$script['version'] == '{{filemtime}}' ?
-						filemtime( SECTIONBLOCK_PATH . $script['script'] ) : $script['version']
-				);
-			}
-		}
-		foreach ( $block['styles'] as $type => $styles ) {
-			foreach ( $styles as $key => $style ) {
-				wp_register_style(
-					$style['handle'],
-					plugins_url( $style['script'], SECTIONBLOCK_FILE ),
-					$style['dependencies'],
-					$style['version']
-				);
-			}
-		}
 		
 		foreach ( $block['callbacks'] as $call => $cb ) {
 			$register_arguments[ $call ] = $cb;
@@ -98,6 +68,7 @@ function blocks() {
 		
 		register_block_type( SECTIONBLOCK_SLUG . '/' . $block['id'], $register_arguments );
 	}
+	
 }
 
 /**
@@ -105,40 +76,28 @@ function blocks() {
  */
 function editor_scripts() {
 	
-	global $SBLCK;
-	
 	if ( ! function_exists( 'register_block_type' ) ) {
 		return;
 	}
 	
-	foreach ( $SBLCK->get( 'common' ) as $script ) {
+	enqueue( 'editor' );
+}
+
+/**
+ * Enqueues registered scripts.
+ *
+ * @param string $where
+ */
+function enqueue( $where = '' ) {
+	
+	$SCR = scripts_array( $where );
+	
+	foreach ( $SCR['scripts'] as $script ) {
 		wp_enqueue_script( $script['handle'] );
 	}
 	
-	foreach ( $SBLCK->get( 'sidebars' ) as $sidebar ) {
-		
-		foreach ( $sidebar['scripts']['editor_script'] as $script ) {
-			wp_enqueue_script( $script['handle'] );
-		}
-		
-		if ( $SBLCK->get('plugin.use.sidebar.css' ) ) {
-			foreach ( $sidebar['styles']['editor_style'] as $style ) {
-				wp_enqueue_style( $style['handle'] );
-			}
-		}
-	}
-	
-	foreach ( $SBLCK->get( 'blocks' ) as $type => $block ) {
-		
-		foreach ( $block['scripts']['editor_script'] as $script ) {
-			wp_enqueue_script( $script['handle'] );
-		}
-		
-		if ( $SBLCK->get('plugin.use.' . $type . '.css' ) ) {
-			foreach ( $block['styles']['editor_style'] as $style ) {
-				wp_enqueue_style( $style['handle'] );
-			}
-		}
+	foreach ( $SCR['styles'] as $style ) {
+		wp_enqueue_style( $style['handle'] );
 	}
 }
 
@@ -147,72 +106,11 @@ function editor_scripts() {
  */
 function front_scripts() {
 	
-	global $SBLCK;
-	
 	if ( ! function_exists( 'register_block_type' ) ) {
 		return;
 	}
 	
-	foreach ( $SBLCK->get( 'blocks' ) as $type => $block ) {
-		
-		foreach ( $block['scripts']['script'] as $script ) {
-			wp_enqueue_script( $script['handle'] );
-		}
-		
-		// checks to be sure the use of plugin stylesheets was desired
-		if ( $SBLCK->get('plugin.use.' . $type . '.css' ) ) {
-			foreach ( $block['styles']['style'] as $style ) {
-				wp_enqueue_style( $style['handle'] );
-			}
-		}
-	}
-}
-
-/**
- * Gets post and sets useful-to-us properties on the object
- *
- * @param string|int $id Post ID from rest controller
- *
- * @return object
- */
-function get_post( $id ) {
-	
-	$post = \get_post( $id );
-	
-	if ( ! $post ) {
-		return (object) [ 'error' => 'post does not exist' ];
-	}
-	
-	$thumb   = get_post_thumbnail_id( $id );
-	$cats    = get_the_category( $id );
-	$excerpt = ! empty( $post->post_excerpt ) ?
-		$post->post_excerpt : wp_trim_words( wp_strip_all_tags( $post->post_content ) );
-	
-	$ret = (object) [
-		'id'        => $id,
-		'slug'      => $post->post_name,
-		'type'      => $post->post_type,
-		'title'     => $post->post_title,
-		'img'       => (object) [
-			'id'  => $thumb ? intval( $thumb ) : 0,
-			'thumb' => $thumb ? get_the_post_thumbnail_url( $id, 'post-thumbnail' ) : '',
-			'medium' => $thumb ? get_the_post_thumbnail_url( $id, 'medium' ) : '',
-			'large' => $thumb ? get_the_post_thumbnail_url( $id, 'large' ) : '',
-			'url' => $thumb ? get_the_post_thumbnail_url( $id ) : '',
-			'alt' => $thumb ? get_post_meta( $thumb, '_wp_attachment_image_alt', TRUE ) : '',
-		],
-		'category'  => [
-			'term' => ! empty( $cats ) ? $cats[0]->name : '',
-			'slug' => ! empty( $cats ) ? $cats[0]->slug : '',
-			'id'   => ! empty( $cats ) ? intval( $cats[0]->term_id ) : '',
-			'tax'  => ! empty( $cats ) ? intval( $cats[0]->term_taxonomy_id ) : '',
-		],
-		'permalink' => get_the_permalink( $id ),
-		'excerpt'   => $excerpt,
-	];
-	
-	// allow filtering of object
-	return apply_filters( 'sectionblock_rest_post_object', $ret, $id );
+	enqueue();
 }
 
 /**
@@ -266,26 +164,143 @@ function includes_add( $array ) {
 }
 
 /**
- * Modifies script tags to allow modules
+ * Registers scripts. $cfg is an array as below, can also be empty.
  *
- * @param $tag
- * @param $handle
- * @param $src
+ * [
+ *   'script' => [
+ *      [], [], [] ... script config arrays
+ *   ],
+ *   'editor_script' => [
+ *      [], [], [] ... script config arrays
+ *   ]
+ * ]
  *
- * @return string
+ * @param $scripts
  */
-function module( $tag, $handle, $src ) {
+function register_scripts( $scripts ) {
 	
 	global $SBLCK;
 	
-	foreach ( $SBLCK->get( 'common' ) as $array ) {
+	foreach ( $scripts as $script ) {
 		
-		if ( empty( $array['module'] ) || $handle != $array['handle'] ) {
-			continue;
+		wp_register_script(
+			$script['handle'],
+			plugins_url( $script['script'], SECTIONBLOCK_FILE ),
+			$script['dependencies'],
+			$script['version'] == '{{filemtime}}' ?
+				filemtime( SECTIONBLOCK_PATH . $script['script'] ) : $script['version']
+		);
+		
+		if ( ! empty( $script['local'] ) ) {
+			wp_localize_script(
+				$script['handle'],
+				$script['local']['var'],
+				$script['local']['data'] == '{{global}}' ? [ 'CFG' => $SBLCK->get() ] : $script['local']['data']
+			);
 		}
+	}
+}
+
+/**
+ * Registers styles. $cfg is an array as below, can also be empty.
+ *
+ * [
+ *   'style' => [
+ *      [], [], [] ... script config arrays
+ *   ],
+ *   'editor_style' => [
+ *      [], [], [] ... script config arrays
+ *   ]
+ * ]
+ *
+ * @param $styles
+ */
+function register_styles( $styles ) {
+	
+	foreach ( $styles as $style ) {
 		
-		$tag = '<script type="module" src="' . $src . '"></script>';
+		wp_register_style(
+			$style['handle'],
+			plugins_url( $style['script'], SECTIONBLOCK_FILE ),
+			$style['dependencies'],
+			$style['version']
+		);
+	}
+}
+
+/**
+ * Builds array of scripts to be registered or enqueued
+ *
+ * @param string $where empty for public, 'editor' for editor, 'all' returns all
+ *
+ * @return array
+ */
+function scripts_array( $where = '' ) {
+	
+	global $SBLCK;
+	
+	$ret = [
+		'scripts' => [],
+		'styles'  => [],
+	];
+	
+	if ( $where == 'all' ) {
+		$ret   = scripts_array( 'editor' );
+		$where = '';
 	}
 	
-	return $tag;
+	$prefix = $where ? $where . '_' : '';
+	
+	$find = [
+		'scripts' => scripts_find( $SBLCK->get(), $prefix . 'script' ),
+		'styles'  => scripts_find( $SBLCK->get(), $prefix . 'style' ),
+	];
+	
+	$ret = array_merge_recursive( $ret, $find );
+	
+	return $ret;
+}
+
+/**
+ * Finds scripts in array, looking for the 'key'. $required contains keys which must be present in found script
+ * config array.
+ *
+ * @param $array
+ * @param $key
+ *
+ * @return array
+ */
+function scripts_find( $array, $key ) {
+	
+	$ret      = [];
+	$required = [ 'handle', 'script' ];
+	
+	foreach ( $array as $array_key => $value ) {
+		
+		if ( $array_key === $key && is_array( $value ) ) {
+			
+			foreach ( $value as $k => $v ) {
+				foreach ( $required as $req ) {
+					if ( empty( $v[ $req ] ) ) {
+						unset( $value[ $k ] );
+					}
+					break;
+				}
+			}
+			
+			if ( ! empty( $value ) ) {
+				$ret = array_merge( array_values( $value ), $ret );
+			}
+			
+		} else if ( is_array( $value ) ) {
+			
+			$recurse = scripts_find( $value, $key );
+			
+			if ( ! empty( $recurse ) ) {
+				$ret = array_merge( $recurse, $ret );
+			}
+		}
+	}
+	
+	return $ret;
 }

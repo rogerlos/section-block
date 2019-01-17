@@ -3,29 +3,6 @@
 namespace sectionblock\util;
 
 /**
- * Adds a screen from customizer
- *
- * @param string $prefix
- *
- * @return string
- */
-function screen( $prefix = 'bg_screen' ) {
-	
-	$color = get_theme_mod( $prefix . '_color', '#000000' );
-	
-	$op = [
-		intval( get_theme_mod( $prefix . '_start', 30 ) ),
-		intval( get_theme_mod( $prefix . '_middle', 0 ) ),
-		intval( get_theme_mod( $prefix . '_end', 30 ) ),
-	];
-	
-	return 'linear-gradient( to bottom, ' . to_rgba( $color, $op[0] ) . ', '
-	       . to_rgba( $color, $op[1] ) . ', '
-	       . to_rgba( $color, $op[2] ) . ''
-	       . '),';
-}
-
-/**
  * Converts hex to rgba
  *
  * @param      $color

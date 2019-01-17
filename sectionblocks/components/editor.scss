@@ -1,0 +1,57 @@
+.sectionblock-wp-post-value {
+  font-style: italic;
+
+  span {
+    display: block;
+    background: #eee;
+    padding: 10px;
+    border: 1px dashed #999;
+    margin: 5px 0;
+  }
+
+  .is-button {
+    font-style: normal;
+  }
+}
+
+.sectionblock-inspector-controls,
+.sectionblock-panel {
+  p.sectionblock-inspector-title {
+    position: relative;
+    flex-basis: 100%;
+    width: 100%;
+    min-width: 100%;
+    font-weight: bold;
+    padding: 0 0 3px 0;
+    margin: 5px 0;
+  }
+  p.components-base-control__help {
+    margin: 3px 0;
+    color: #999;
+    padding-left: 10px;
+    font-style: italic;
+  }
+}
+
+.sectionblock-inspector-row {
+  min-width: 100%;
+  width: 100%;
+  position: relative;
+  flex-wrap: wrap;
+}
+
+.sectionblock-panel {
+
+  label {
+    font-weight: bold;
+    padding: 0;
+    margin: 5px 0;
+  }
+
+  .components-toggle-control {
+    label {
+      font-weight: normal;
+      margin: 0;
+    }
+  }
+}

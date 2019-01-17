@@ -1,3 +1,54 @@
 .sectionblock-section {
-  padding: 1rem;
+
+  &.alignnone {
+    max-width: 100%;
+  }
+
+  &.aligncenter {
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  &.alignleft {
+    max-width: 45%;
+    float: left;
+    margin: 0 2% 2% 0;
+  }
+
+  &.alignright {
+    max-width: 45%;
+    float: right;
+    margin: 0 0 2% 2%;
+  }
+
+  &.alignwide {
+    margin-left: calc(calc(100% - 100vw) / 4);
+    margin-right: calc(calc(100% - 100vw) / 4);
+  }
+
+  &.alignfull {
+    margin-left: calc(calc(100% - 100vw) / 2);
+    margin-right: calc(calc(100% - 100vw) / 2);
+  }
+
+  .sectionblock-flex {
+    .sectionblock-section-items {
+      display: flex;
+      flex-direction: column;
+      flex-wrap: wrap;
+    }
+  }
+
+  .sectionblock-section {
+    &.alignwide {
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    &.alignfull {
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
 }

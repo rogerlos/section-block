@@ -1,31 +1,68 @@
-[
-  {
-    "dependencies": [
-      "wp-blocks",
-      "wp-components",
-      "wp-data",
-      "wp-edit-post",
-      "wp-editor",
-      "wp-element",
-      "wp-plugins"
-    ],
-    "handle": "sectionblock-common",
-    "local": {
-      "var": "SBLCK",
-      "data": "{{global}}"
-    },
-    "script": "components/common.js",
-    "version": "{{filemtime}}",
-    "module": false
+{
+  "scripts" : {
+    "script" :        [],
+    "editor_script" : [
+      {
+        "dependencies" : [
+          "wp-blocks",
+          "wp-components",
+          "wp-data",
+          "wp-edit-post",
+          "wp-editor",
+          "wp-element",
+          "wp-plugins"
+        ],
+        "handle" :       "sectionblock-common",
+        "local" :        {
+          "var" :  "SBLCK",
+          "data" : "{{global}}"
+        },
+        "script" :       "components/common.js",
+        "version" :      "{{filemtime}}",
+        "module" :       false
+      },
+      {
+        "dependencies" : [
+          "sectionblock-img"
+        ],
+        "handle" :       "sectionblock-bg",
+        "local" :        {},
+        "script" :       "components/bg.js",
+        "version" :      "{{filemtime}}",
+        "module" :       false
+      },
+      {
+        "dependencies" : [
+          "sectionblock-common"
+        ],
+        "handle" :       "sectionblock-img",
+        "local" :        {},
+        "script" :       "components/image.js",
+        "version" :      "{{filemtime}}",
+        "module" :       false
+      },
+      {
+        "dependencies" : [
+          "sectionblock-bg"
+        ],
+        "handle" :       "sectionblock-editor",
+        "local" :        {},
+        "script" :       "components/editor.js",
+        "version" :      "{{filemtime}}",
+        "module" :       false
+      }
+    ]
   },
-  {
-    "dependencies": [
-      "sectionblock-common"
-    ],
-    "handle": "sectionblock-bg",
-    "local": {},
-    "script": "components/bg.js",
-    "version": "{{filemtime}}",
-    "module": false
+  "styles" :  {
+    "style" :        [],
+    "editor_style" : [
+      {
+        "handle" :       "sectionblock-common-editor-style",
+        "script" :       "components/editor.css",
+        "dependencies" : [],
+        "version" :      "{{filemtime}}"
+      }
+    ]
   }
-]
+}
+

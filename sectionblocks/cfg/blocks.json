@@ -12,16 +12,23 @@
           "type" : "object"
         },
         "bItems" :     {
-          "allowed": [],
+          "allowed" :                [],
           "keepPlaceholderOnFocus" : true,
           "className" :              "sectionblock-section-items",
           "placeholder" :            "Add items",
           "tagName" :                "div"
         },
-        "bClass" :   {
-          "help" :  "Optional: set style for section.",
-          "label" : "Section Style",
-          "type" :  "string"
+        "bClass" :     {
+          "help" :      "Optional: set style for section.",
+          "label" :     "Section Style",
+          "type" :      "string",
+          "className" : "sectionblock-bclass sectionblock-select"
+        },
+        "bFlex" :      {
+          "help" :      "Make all top-level items within your section flow using CSS flex columns. This works best with items such as images or blocks that imitate widgets.",
+          "label" :     "Make Section Flex Container",
+          "type" :      "boolean",
+          "className" : "sectionblock-bflex sectionblock-checkbox"
         }
       },
       "category" :    "sectionblock-blocks",
@@ -47,7 +54,14 @@
       "blocks/section/section.php"
     ],
     "inspector" : {
-      "panels": {}
+      "panels" : {
+        "display" : {
+          "className" :   "sectionblock-bclass-panel sectionblock-panel",
+          "initialOpen" : true,
+          "title" :       "Styles & Display",
+          "desc" :        ""
+        }
+      }
     },
     "label" :     "Section Label",
     "scripts" :   {
@@ -77,19 +91,20 @@
           "handle" :       "sectionblock-section-editor-style",
           "script" :       "blocks/section/section_editor.css",
           "dependencies" : [
-            "sectionblock-section-style"
+            "sectionblock-section-style",
+            "sectionblock-common-editor-style"
           ],
           "version" :      "{{filemtime}}"
         }
       ]
     }
   },
-  "item" :   {
+  "item" :    {
     "callbacks" : {
       "render_callback" : "\\sectionblock\\item\\render"
     },
     "cfg" :       {
-      "attributes" : {
+      "attributes" :  {
         "itemButton" :       {
           "className" :   "sectionblock-item-button",
           "placeholder" : "Optional \"Action Button\"",
@@ -250,11 +265,11 @@
           "label" :     "",
           "type" :      "object"
         },
-        "iClass" :   {
+        "iClass" :           {
           "className" : "sectionblock-item-iclass",
-          "help" :  "Optional: set style for item.",
-          "label" : "Item Style",
-          "type" :  "string"
+          "help" :      "Optional: set style for item.",
+          "label" :     "Item Style",
+          "type" :      "string"
         }
       },
       "category" :    "sectionblock-blocks",
@@ -272,123 +287,111 @@
       "blocks/item/item.php"
     ],
     "inspector" : {
-      "panels": {
-        "select"     : {
-            "className"   : "sectionblock-inspector-select-post",
-            "initialOpen" : false,
-            "title"       : "Select Post",
-            "desc"        : "Choose a post whose content to import to this item."
+      "panels" : {
+        "select" : {
+          "className" :   "sectionblock-display-panel sectionblock-panel",
+          "initialOpen" : true,
+          "title" :       "Styles & Display",
+          "desc" :        "Options for styling the Feature"
         },
-        "wp"     : {
-            "className"   : "sectionblock-inspector-wp-post",
-            "initialOpen" : false,
-            "title"       : "Selected Post's Content",
-            "desc"        : "As displayed on the site."
+        "wp" :     {
+          "className" :   "sectionblock-wp-post-panel sectionblock-panel",
+          "initialOpen" : false,
+          "title" :       "Select Post",
+          "desc" :        "Choose a post whose content to import to this item."
         },
-        "image"  : {
-            "className"   : "sectionblock-inspector-image",
-            "initialOpen" : false,
-            "title"       : "Image",
-            "desc"        : "Image displayed in the widget. Usually the post thumbnail."
+        "image" :  {
+          "className" :   "sectionblock-image-panel sectionblock-panel",
+          "initialOpen" : false,
+          "title" :       "Current Image",
+          "desc" :        "Image displayed in the widget. Can be copied from post (if chosen) or select from Media Library."
         },
-        "link"   : {
-            "className"   : "sectionblock-inspector-link",
-            "initialOpen" : false,
-            "title"       : "Links To",
-            "desc"        : "This is normally the post's permalink and should not be changed without good reason."
-        },
-        "linked" : {
-            "className"   : "sectionblock-inspector-linked",
-            "initialOpen" : false,
-            "title"       : "Clickable Elements",
-            "desc"        : "Change which elements are linked. (Buttons are always linked.)"
-        },
-        "lock"   : {
-            "className"   : "sectionblock-inspector-lock",
-            "initialOpen" : false,
-            "title"      : "Edit Post Content",
-            "desc"        : "If you lock a field, edits are not saved. Locking will overwrite any custom content with the post-based content!"
+        "link" :   {
+          "className" :   "sectionblock-link-panel sectionblock-panel",
+          "initialOpen" : false,
+          "title" :       "Links To",
+          "desc" :        "This is normally the post's permalink and should not be changed without good reason."
         }
       },
-      "struct": {
-        "wrap"       : {
-            "tagName"   : "div",
-            "className" : "sectionblock-item"
+      "struct" : {
+        "wrap" :       {
+          "tagName" :   "div",
+          "className" : "sectionblock-item"
         },
-        "inner"      : {
-            "tagName"   : "div",
-            "className" : "sectionblock-main-inner"
+        "inner" :      {
+          "tagName" :   "div",
+          "className" : "sectionblock-main-inner"
         },
-        "imageWrap"  : {
-            "tagName"   : "div",
-            "className" : "sectionblock-main-inner-image"
+        "imageWrap" :  {
+          "tagName" :   "div",
+          "className" : "sectionblock-main-inner-image"
         },
         "imageInner" : {
-            "tagName"   : "span",
-            "className" : "sectionblock-main-inner-image-inner"
+          "tagName" :   "span",
+          "className" : "sectionblock-main-inner-image-inner"
         },
-        "image"      : {
-            "tagName"   : "img",
-            "className" : "sectionblock-main-inner-image-img",
-            "src"       : "",
-            "alt"       : ""
+        "image" :      {
+          "tagName" :   "img",
+          "className" : "sectionblock-main-inner-image-img",
+          "src" :       "",
+          "alt" :       ""
         },
-        "text"       : {
-            "tagName"   : "div",
-            "className" : "sectionblock-main-inner-text"
+        "text" :       {
+          "tagName" :   "div",
+          "className" : "sectionblock-main-inner-text"
         },
-        "headline"   : {
-            "tagName"   : "div",
-            "className" : "sectionblock-main-inner-text-headline"
+        "headline" :   {
+          "tagName" :   "div",
+          "className" : "sectionblock-main-inner-text-headline"
         },
-        "label"      : {
-            "tagName"   : "div",
-            "className" : "sectionblock-main-inner-text-label"
+        "label" :      {
+          "tagName" :   "div",
+          "className" : "sectionblock-main-inner-text-label"
         },
-        "excerpt"    : {
-            "tagName"   : "div",
-            "className" : "sectionblock-main-inner-text-excerpt"
+        "excerpt" :    {
+          "tagName" :   "div",
+          "className" : "sectionblock-main-inner-text-excerpt"
         },
-        "button"     : {
-            "tagName"   : "div",
-            "className" : "sectionblock-main-inner-text-button"
+        "button" :     {
+          "tagName" :   "div",
+          "className" : "sectionblock-main-inner-text-button"
         }
       },
-      "wp": {
-        "title"     : {
-            "className" : "sectionblock-item-post-wp-title",
-            "label"     : "Title",
-            "dynamic"   : "title",
-            "lock"      : "itemLockTitle",
-            "item"      : "itemTitle"
+      "wp" :     {
+        "title" :     {
+          "className" : "sectionblock-item-post-wp-title",
+          "label" :     "Title",
+          "dynamic" :   "title",
+          "lock" :      "itemLockTitle",
+          "item" :      "itemTitle"
         },
-       "excerpt"   : {
-            "className" : "sectionblock-item-post-wp-excerpt",
-            "label"     : "Excerpt",
-            "dynamic"   : "excerpt",
-            "lock"      : "itemLockText",
-            "item"      : "itemText"
+        "excerpt" :   {
+          "className" : "sectionblock-item-post-wp-excerpt",
+          "label" :     "Excerpt",
+          "dynamic" :   "excerpt",
+          "lock" :      "itemLockText",
+          "item" :      "itemText"
         },
-        "category"  : {
-            "className" : "sectionblock-item-post-wp-category",
-            "label"     : "Category",
-            "dynamic"   : "category",
-            "lock"      : "itemLockLabel",
-            "item"      : "itemLabel"
+        "category" :  {
+          "className" : "sectionblock-item-post-wp-category",
+          "label" :     "Category",
+          "dynamic" :   "category",
+          "lock" :      "itemLockLabel",
+          "item" :      "itemLabel"
         },
-        "img"       : {
-            "className" : "sectionblock-item-post-wp-image",
-            "label"     : "Image",
-           "dynamic"   : "img",
-            "lock"      : "itemLockImage",
-            "item"      : "itemImage"
+        "img" :       {
+          "className" : "sectionblock-item-post-wp-image",
+          "label" :     "Image",
+          "dynamic" :   "img",
+          "lock" :      "itemLockImage",
+          "item" :      "itemImage"
         },
         "permalink" : {
-            "className" : "sectionblock-item-post-wp-link",
-            "label"     : "Link",
-            "dynamic"   : "permalink",
-            "lock"      : "itemLockLink",
-            "item"      : "itemLink"
+          "className" : "sectionblock-item-post-wp-link",
+          "label" :     "Link",
+          "dynamic" :   "permalink",
+          "lock" :      "itemLockLink",
+          "item" :      "itemLink"
         }
       }
     },
@@ -420,7 +423,8 @@
           "handle" :       "sectionblock-item-editor-style",
           "script" :       "blocks/item/item_editor.css",
           "dependencies" : [
-            "sectionblock-item-style"
+            "sectionblock-item-style",
+            "sectionblock-common-editor-style"
           ],
           "version" :      "{{filemtime}}"
         }

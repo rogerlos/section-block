@@ -126,20 +126,41 @@ function style( $background ) {
 	
 	$size = size( $background );
 	$size = ! $size && ! empty( $background['size']['keyword'] ) ? $background['size']['keyword'] : $size;
-	$img  = ! empty( $background['image'] ) ? $background['image'] : [ 'url' => '' ];
 	
-	$overlay = ! empty( $background['overlay']['type'] ) && ! empty( $img['url'] ) ? style_overlay( $background ) : '';
+	$img  = ! empty( $background['image'] ) ?
+		$background['image'] : [ 'url' => '' ];
 	
-	$ret .= ! empty( $background['colorinline'] ) ? 'background-color:' . $background['colorinline'] . ';' : '';
-	$ret .= $ret && ! empty( $img['url'] ) ? 'background-image:' . $overlay . 'url(' . $img['url'] . ');' : $ret;
-	$ret .= $ret && $size ? 'background-size:' . $size . ';' : $ret;
-	$ret .= $ret && ! empty( $background['repeat'] ) ? 'background-repeat:' . $background['repeat'] . ';' : $ret;
-	$ret .= $ret && ! empty( $background['attachment'] ) ? 'background-attachment:' . $background['attachment'] . ';' : $ret;
-	$ret .= $ret && ! empty( $background['blend'] ) ? 'background-blend-mode:' . $background['blend'] . ';' : $ret;
+	$overlay = ! empty( $background['overlay']['type'] ) && ! empty( $img['url'] ) ?
+		style_overlay( $background ) : '';
 	
-	$ret = apply_filters( 'sectionblock_background_inline_styles', $ret, $background );
+	$color = ! empty( $background['colorinline'] ) ? $background['colorinline'] : null;
+	$color = is_array( $color ) && ! empty( $color['hex'] ) ?
+		\sectionblock\util\to_rgba( $color['hex'], $color['alpha'] ) : $color;
 	
-	return $ret ? ' style="' . $ret . '"' : '';
+	$ret .= ! empty( $color ) ?
+		'background-color:' . $color . ';' : '';
+	
+	$ret .= $ret && ! empty( $img['url'] ) ?
+		'background-image:' . $overlay . 'url(' . $img['url'] . ');' : '';
+	
+	$ret .= $ret && $size ?
+		'background-size:' . $size . ';' : '';
+	
+	$ret .= $ret && ! empty( $background['repeat'] ) ?
+		'background-repeat:' . $background['repeat'] . ';' : '';
+	
+	$ret .= $ret && ! empty( $background['attachment'] ) ?
+		'background-attachment:' . $background['attachment'] . ';' : '';
+	
+	$ret .= $ret && ! empty( $background['position'] ) ?
+		'background-position:' . $background['position']['x'] . ' ' . $background['position']['y'] . ';' : '';
+	
+	$ret .= $ret && ! empty( $background['blend'] ) ?
+		'background-blend-mode:' . $background['blend'] . ';' : '';
+	
+	$filtered = apply_filters( 'sectionblock_background_inline_styles', $ret, $background );
+	
+	return $filtered ? ' style="' . $filtered . '"' : '';
 }
 
 /**
@@ -153,10 +174,11 @@ function style_overlay( $background ) {
 	
 	global $SBLCK;
 	
-	$types = $SBLCK->get( 'plugin.overlays' );
+	$types = $SBLCK->get( 'background.overlays' );
 	
 	$params = [
-		'alpha'        => empty( $background['overlay']['alpha'] ) ? 0 : intval( $background['overlay']['alpha'] ),
+		'alpha'        => empty( $background['overlay']['alpha'] ) ? 100 : intval( $background['overlay']['alpha'] ),
+		'beta'        => empty( $background['overlay']['beta'] ) ? 0 : intval( $background['overlay']['beta'] ),
 		'colors'       => [
 			'original' => empty( $background['overlay']['color'] ) ? '#000000' : $background['overlay']['color'],
 			'a'        => '',
@@ -164,21 +186,18 @@ function style_overlay( $background ) {
 		],
 		'deg'          => '180deg',
 		'edge_opacity' => '20%',
-		'half'         => 0,
 		'start'        => empty( $background['overlay']['start'] ) ? 'top' : $background['overlay']['start'],
 		'type'         => empty( $background['overlay']['type'] ) ? '' : $background['overlay']['type'],
 	];
 	
-	$params['type'] = empty( $params['type'] ) || ! in_array( $params['type'], $types ) ? $types[0] : $params['type'];
+	$params['type'] = empty( $params['type'] ) || ! in_array( $params['type'], $types ) ? '' : $params['type'];
 	
 	$params['alpha'] = $params['alpha'] < 0 ? 0 : $params['alpha'];
 	$params['alpha'] = $params['alpha'] > 100 ? 100 : $params['alpha'];
-	$params['half']  = intval( $params['alpha'] / 2 );
 	
 	$params['colors']['a'] = \sectionblock\util\to_rgba( $params['colors']['original'], $params['alpha'] );
 	$params['colors']['b'] = $params['type'] === 'cover' ?
-		$params['colors']['a'] :
-		\sectionblock\util\to_rgba( $params['colors']['original'], $params['half'] );
+		$params['colors']['a'] : \sectionblock\util\to_rgba( $params['colors']['original'], $params['beta'] );
 	
 	switch ( $params['start'] ) {
 		case 'bottom':

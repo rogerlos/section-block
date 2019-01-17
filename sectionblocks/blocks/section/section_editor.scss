@@ -1,12 +1,78 @@
-.edit-post-visual-editor {
+/* Allowing some space to click on section ***************************************************************************/
 
-  .editor-block-list__block {
-    &[data-type="sectionblock/section"] {
-      &:not([data-align="left"]) {
-        &:not([data-align="right"]) {
-          clear: both;
+.edit-post-visual-editor {
+  .sectionblock-section {
+    border: 2px dotted #ccc;
+  }
+}
+
+/* Section widths ****************************************************************************************************/
+
+.edit-post-visual-editor .editor-block-list__block {
+
+  &[data-type="sectionblock/section"] {
+
+    &[data-align="wide"],
+    &[data-align="full"] {
+      .editor-block-list__layout {
+        .editor-block-list__block {
+          max-width: 100%;
+          margin-left: 32px;
+          margin-right: 32px;
+          padding-left: 0;
+          padding-right: 0;
         }
       }
+    }
+
+    &[data-align="left"],
+    &[data-align="right"] {
+      .sectionblock-section {
+        max-width: 48%;
+        margin-right: 4%;
+
+        &:nth-of-type(2n) {
+          margin-right: 0;
+        }
+
+        .sectionblock-section {
+          max-width: 100%;
+          margin-right: 0;
+        }
+      }
+    }
+  }
+}
+
+/* Adjust flex *******************************************************************************************************/
+
+.edit-post-visual-editor {
+  .sectionblock-section {
+
+    &.sectionblock-flex {
+      .sectionblock-section-items {
+        display: block;
+
+        .editor-inner-blocks {
+          > .editor-block-list__layout {
+            display: flex;
+            flex-wrap: wrap;
+
+            > * {
+              flex-basis: 100%;
+              width: 100%;
+              min-width: 100%;
+              max-width: 100%;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .sectionblock-section-items {
+    .editor-block-list__block-edit {
+      float: none !important;
     }
   }
 }

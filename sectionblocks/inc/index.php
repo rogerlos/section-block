@@ -1,5 +1,6 @@
 <?php
 
+include __DIR__ . '/CFG.php';
 include __DIR__ . '/background.php';
 include __DIR__ . '/init.php';
 include __DIR__ . '/rest.php';

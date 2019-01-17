@@ -1,18 +1,18 @@
 /**
  * @typedef {Object} SBLCK
- * @property {Object} background
- * @property {SLCT[]} background.blends
- * @property {SLCT[]} background.ghosts
- * @property {SLCT[]} background.ghostpos
- * @property {SLCT[]} background.overlay
- * @property {SLCT[]} background.attachment
- * @property {CLR[]} background.colors
- * @property {Object} plugin
- * @property {Object} plugin.use
- * @property {Object} plugin.use.item
- * @property {BACKER} plugin.use.item.background
- * @property {Object} plugin.use.section
- * @property {BACKER} plugin.use.section.background
+ * @property {Object} CFG
+ * @property {Object} CFG.background
+ * @property {SLCT[]} CFG.background.blends
+ * @property {SLCT[]} CFG.background.ghosts
+ * @property {SLCT[]} CFG.background.ghostpos
+ * @property {SLCT[]} CFG.background.overlay
+ * @property {SLCT[]} CFG.background.attachment
+ * @property {CLR[]} CFG.background.colors
+ * @property {Object} CFG.use
+ * @property {Object} CFG.use.item
+ * @property {BACKER} CFG.use.item.background
+ * @property {Object} CFG.use.section
+ * @property {BACKER} CFG.use.section.background
  */
 
 /**
@@ -43,321 +43,268 @@
  * @property {Boolean} blend
  */
 
-function BACKGROUND() {
+( function ( SBLCK ) {
 
-    const EL                                                      = wp.element.createElement;
-    const { PanelBody, RadioControl, SelectControl, TextControl } = wp.components;
-    const { PanelColorSettings }                                  = wp.editor;
+    const EL                                                                              = wp.element.createElement;
+    const { PanelBody, PanelRow, RadioControl, RangeControl, SelectControl, TextControl } = wp.components;
+    const { PanelColorSettings }                                                          = wp.editor;
+    const { Fragment }                                                                    = wp.element;
 
-    const USE = SBLCK.plugin.use;
+    const USE = SBLCK.CFG.use;
+    const PFX = 'sectionblock-';
 
-    this.COMMON = new SBLCK_COMMON();
+    const VARS = SBLCK.CFG.background;
 
-    this.attachment = 'scroll';
-    this.blend      = '';
-    this.color      = '';
-    this.ghost      = {
-        img : '',
-        pos : 'right'
-    };
-    this.image      = {
-        src : '',
-        alt : '',
-        id  : 0
-    };
-    this.overlay    = {
-        alpha : 0,
-        color : '#000000',
-        start : '',
-        type  : ''
-    };
-    this.position   = {
-        x : 0,
-        y : 0
-    };
-    this.repeat     = 'no-repeat';
-    this.size       = {
-        keyword : 'cover',
-        x       : 0,
-        y       : 0
-    };
-    this.vars       = SBLCK.background;
-
-    this.uploader = {
-        key    : '',
-        change : null
-    };
-
-    this.assign = function ( $obj ) {
-
-        if ( typeof( $obj ) !== 'object' ) return;
-
-        if ( $obj.hasOwnProperty( 'attachment' ) ) this.attachment = $obj.attachment;
-        if ( $obj.hasOwnProperty( 'blend' ) ) this.blend = $obj.blend;
-        if ( $obj.hasOwnProperty( 'color' ) ) this.color = $obj.color;
-        if ( $obj.hasOwnProperty( 'ghost' ) ) this.ghost = $obj.ghost;
-        if ( $obj.hasOwnProperty( 'image' ) ) this.image = $obj.image;
-        if ( $obj.hasOwnProperty( 'overlay' ) ) this.overlay = $obj.overlay;
-        if ( $obj.hasOwnProperty( 'position' ) ) this.position = $obj.position;
-        if ( $obj.hasOwnProperty( 'repeat' ) ) this.repeat = $obj.repeat;
-        if ( $obj.hasOwnProperty( 'size' ) ) this.size = $obj.size;
-    };
-
-    this.class = function () {
-        return this.Classes();
-    };
-
-    this.inspector = function ( key, change, img ) {
-
-        img                  = typeof( img ) === 'undefined' ? false : img;
-        let has              = img && img.id > 0;
-        this.uploader.key    = key;
-        this.uploader.change = change;
-
-        let use = key === 'itemBackground' ? USE.item.background : USE.section.background;
-
-        return (
-            EL(
-                wp.element.Fragment,
-                {
-                    key : 'bg-inspector'
-                },
-                use.color ? this.Color( key, change ) : null,
-                use.ghost ? this.Ghost( key, change ) : null,
-                use.image && img ? this.Image( img ) : null,
-                use.attachment && has ? this.Attachment( key, change ) : null,
-                use.position && has ? this.Position( key, change ) : null,
-                use.size && has ? this.Size( key, change ) : null,
-                use.overlay && has ? this.Overlay( key, change ) : null,
-                use.overlay && has ? this.OverlayOther( key, change ) : null,
-                use.blend && has ? this.Blend( key, change ) : null,
-                use.repeat && has ? this.Repeat( key, change ) : null,
-            )
-        )
-    };
-
-    this.make_object = function () {
-
-        return {
-            attachment : this.attachment,
-            blend      : this.blend,
-            color      : this.color,
-            ghost      : this.ghost,
-            image      : this.image,
-            overlay    : this.overlay,
-            position   : this.position,
-            repeat     : this.repeat,
-            size       : this.size
+    let PROPS = {
+        attachment : 'scroll',
+        blend      : '',
+        color      : {
+            hex   : '',
+            alpha : 100
+        },
+        ghost      : {
+            img : '',
+            pos : 'right'
+        },
+        image      : {
+            src : '',
+            alt : '',
+            id  : 0
+        },
+        overlay    : {
+            alpha : 100,
+            beta  : 0,
+            color : '',
+            start : '',
+            type  : ''
+        },
+        position   : {
+            x : 0,
+            y : 0
+        },
+        repeat     : 'no-repeat',
+        size       : {
+            keyword : 'cover',
+            x       : 0,
+            y       : 0
+        },
+        uploader   : {
+            key    : '',
+            change : null
         }
     };
 
-    this.save = function ( key, change ) {
-        change( key, this.make_object() );
-    };
+    SBLCK.BG = {};
 
-    this.setImage = function ( key, val ) {
+    SBLCK.BG.Attachment = function ( key, change, val ) {
 
-        this[ key ] = val;
-        this.save( this.uploader.key, this.uploader.change );
-    };
-
-    this.style = function ( type ) {
-        return this.InlineStyle( type );
-    };
-
-    this.Attachment = function ( key, change ) {
-        if ( this.image.id === 0 ) return;
         return EL(
-            PanelBody,
+            PanelRow,
             {
-                key         : 'bg-attachment-wrapper',
-                className   : 'bg-attachment-wrapper',
-                title       : "Attachment",
-                initialOpen : false
+                key       : PFX + 'attachment-row',
+                className : PFX + 'attachment-row ' + PFX + 'inspector-row',
             },
+            EL(
+                'p',
+                {
+                    key       : 'overlay-attachment-title',
+                    className : PFX + 'overlay-attachment-title ' + PFX + 'inspector-title'
+                },
+                "Attachment"
+            ),
             EL(
                 RadioControl,
                 {
-                    key      : 'bg-attachment-radio',
-                    label    : "When Scrolling Page...",
-                    selected : this.attachment,
-                    options  : this.vars.attachment,
-                    help     : "Default is 'Scroll'",
-                    onChange : val => {
-                        this.attachment = val;
-                        this.save( key, change )
+                    key       : PFX + 'attachment-radio',
+                    className : PFX + 'attachment ' + PFX + 'inspector-radio',
+                    label     : "When Scrolling Page...",
+                    selected  : val,
+                    options   : VARS.attachment,
+                    help      : "Default is 'Scroll'",
+                    onChange  : val => {
+                        change( key, val );
                     }
                 }
             )
         )
     };
 
-    this.Blend = function ( key, change ) {
-        if ( ! this.image.id || ! this.color ) return;
+    SBLCK.BG.Blend = function ( key, change, val ) {
+
         return EL(
-            PanelBody,
+            PanelRow,
             {
-                key         : 'bgblnd',
-                className   : "background-blend-wrapper",
-                title       : 'Blend',
-                initialOpen : false
+                key       : 'bgblnd',
+                className : PFX + "blend-row " + PFX + 'inspector-row',
             },
+            EL(
+                'p',
+                {
+                    key       : 'overlay-blend-title',
+                    className : PFX + 'overlay-blend-title ' + PFX + 'inspector-title'
+                },
+                'Blend'
+            ),
             EL(
                 SelectControl,
                 {
-                    key      : "background-blend",
-                    label    : "Mode",
-                    help     : "If a color and an image are both selected, you can add a filter to blend them.",
-                    value    : this.blend,
-                    options  : this.vars.blends,
-                    onChange : val => {
-                        this.blend = val;
-                        this.save( key, change );
+                    key       : "background-blend",
+                    label     : "Mix Color and Image",
+                    className : PFX + 'blend ' + PFX + 'inspector-select',
+                    help      : "If a color and an image are both selected, you can add a filter to blend them.",
+                    value     : val,
+                    options   : VARS.blends,
+                    onChange  : val => {
+                        change( key, val );
                     }
                 }
             )
         )
     };
 
-    this.Classes = function () {
-        let typ = this.Type();
+    SBLCK.BG.Classes = function ( bg ) {
+        let typ = SBLCK.BG.Type( bg );
         let ret;
-        let col = this.color;
-        ret     = 'blend' === typ ? ' has-bg has-bg-image has-bg-color has-bg-blend' : '';
-        ret     = ! ret && 'image' === typ ? ' has-bg has-bg-image' : ret;
-        ret     = ! ret && 'color' === typ ? ' has-bg has-bg-color' : ret;
+        let col = bg.color;
+        ret     = 'blend' === typ ? ' has-bg has-bg-image has-bg-color has-bg-blend ' : '';
+        ret     = ! ret && 'image' === typ ? ' has-bg has-bg-image ' : ret;
+        ret     = ! ret && 'color' === typ ? ' has-bg has-bg-color ' : ret;
         if ( ret && ret !== 'image' ) {
-            this.vars.colors.forEach( function ( e ) {
+            VARS.colors.forEach( function ( e ) {
                 if ( col === e.color ) {
-                    ret += ' has-' + e.slug + '-background-color';
+                    ret += ' has-' + e.slug + '-background-color ';
                 }
             } );
         }
         return ret;
     };
 
-    this.Color = function ( key, change ) {
+    SBLCK.BG.Color = function ( key, change, val ) {
         return EL(
             PanelColorSettings,
             {
                 key           : 'bg-color',
-                title         : "Background Color",
+                className     : PFX + 'color-panel ' + PFX + 'inspector-panel ' + PFX + 'inspector-color',
+                title         : 'Background Color',
                 initialOpen   : false,
                 colorSettings : [
                     {
                         label    : 'Select a Color',
-                        value    : this.color,
+                        value    : val.hex,
                         onChange : val => {
-                            this.color = val;
-                            this.save( key, change )
+                            change( 'hex', val, key )
                         }
                     }
                 ]
-            }
-        )
-    };
-
-    this.Deprecated = function ( what ) {
-
-        let ret = '';
-        let typ = this.Type();
-        let col = this.color;
-
-        switch ( what ) {
-
-            case 'class':
-                ret = 'blend' === typ ? ' has-bg has-bg-image has-bg-color has-bg-blend' : '';
-                ret = ! ret && 'image' === typ ? ' has-bg has-bg-image' : ret;
-                ret = ! ret && 'color' === typ ? ' has-bg has-bg-color' : ret;
-                if ( ret && ret !== 'image' ) {
-                    this.vars.colors.forEach( function ( e ) {
-                        if ( col === e.color ) {
-                            ret += ' sectionblock-bg-' + e.slug;
-                        }
-                    } );
-                }
-                break;
-
-            case 'nocolorclass':
-                ret = 'blend' === typ ? ' has-bg has-bg-image has-bg-color has-bg-blend' : '';
-                ret = ! ret && 'image' === typ ? ' has-bg has-bg-image' : ret;
-                ret = ! ret && 'color' === typ ? ' has-bg has-bg-color' : ret;
-                if ( ret && ret !== 'image' ) {
-                    this.vars.colors.forEach( function ( e ) {
-                        if ( col === e.color ) {
-                            ret += ' sectionblock-bg-' + e.slug;
-                        }
-                    } );
-                }
-        }
-
-        return ret;
-    };
-
-    this.Ghost = function( key, change ) {
-        return EL(
-            PanelBody,
-            {
-                key         : 'pdfsmrem',
-                className   : "background-ghost",
-                title       : "Ornaments",
-                initialOpen : false
             },
             EL(
-                SelectControl,
+                RangeControl,
                 {
-                    key      : "background-ghost-image",
-                    label    : "Image",
-                    help     : "You can add an ornament to the background.",
-                    value    : this.ghost.img,
-                    options  : this.vars.ghosts,
-                    onChange : val => {
-                        this.ghost.img = val;
-                        this.save( key, change )
-                    }
-                }
-            ),
-            EL(
-                RadioControl,
-                {
-                    key      : 'background-ghost-pos',
-                    label    : "Position",
-                    help     : "Choose where the ornament appears, always at the bottom of the container.",
-                    selected : this.ghost.pos,
-                    options  : this.vars.ghostpos,
-                    onChange : val => {
-                        this.ghost.pos = val;
-                        this.save( key, change )
+                    key       : 'bg-color-alp',
+                    label     : "Transparency",
+                    className : PFX + 'color-alpha ' + PFX + 'inspector-range',
+                    help      : "Transparency of background color",
+                    value     : val.alpha,
+                    min       : 0,
+                    max       : 100,
+                    onChange  : val => {
+                        change( 'alpha', val, key )
                     }
                 }
             )
         )
     };
 
-    this.Image = function ( img ) {
-        this.setImage = this.setImage.bind( this );
-        return this.COMMON.image( img, 'image', this.setImage )
+    SBLCK.BG.GetProps = function () {
+        return PROPS;
     };
 
-    this.InlineStyle = function ( type ) {
+    SBLCK.BG.Ghost = function ( key, change, val ) {
+        return EL(
+            PanelRow,
+            {
+                key       : 'ghost-row',
+                className : PFX + 'ghost-row ' + PFX + 'inspector-row',
+            },
+            EL(
+                'p',
+                {
+                    key       : 'overlay-ghost-title',
+                    className : PFX + 'overlay-ghost-title ' + PFX + 'inspector-title'
+                },
+                'Ornaments'
+            ),
+            EL(
+                SelectControl,
+                {
+                    key       : "background-ghost-image",
+                    className : PFX + 'ghost-image ' + PFX + 'inspector-select',
+                    label     : "Image",
+                    help      : "You can add an ornament to the background.",
+                    value     : val.img,
+                    options   : VARS.ghosts,
+                    onChange  : val => {
+                        change( 'img', val, key )
+                    }
+                }
+            ),
+            EL(
+                RadioControl,
+                {
+                    key       : 'background-ghost-pos',
+                    className : PFX + 'ghost-postion ' + PFX + 'radio-grid',
+                    label     : "Position",
+                    help      : "Choose where the ornament appears, always at the bottom of the container.",
+                    selected  : val.pos,
+                    options   : VARS.ghostpos,
+                    onChange  : val => {
+                        change( 'pos', val, key )
+                    }
+                }
+            )
+        )
+    };
 
-        let use = USE[ type ].background;
+    SBLCK.BG.GhostDisplay = function ( bg ) {
+        let where = typeof ( bg.ghost.pos ) === 'undefined' ? 'right' : bg.ghost.pos;
+        if ( ! bg.ghost.img ) {
+            return null
+        }
+        return EL(
+            'div',
+            {
+                className : 'sectionblock-ghost sectionblock-ghost-' + where
+            },
+            EL(
+                'img',
+                {
+                    src : bg.ghost.img
+                }
+            )
+        )
+    };
 
-        let size = this.SizeCalc();
-        size     = ! size && this.size.keyword ? this.size.keyword : size;
+    SBLCK.BG.Image = function ( key, val, change ) {
+        return SBLCK.Image( val, key, change )
+    };
 
+    SBLCK.BG.InlineStyle = function ( type, bg ) {
+        let use  = USE[ type ].background;
+        let size = SBLCK.BG.SizeCalc( bg.size );
+        size     = ! size && bg.size.keyword ? bg.size.keyword : size;
         let over = '';
-
-        if ( this.overlay.type ) {
-            let alpha  = ! this.overlay.alpha ? 0 : parseInt( this.overlay.alpha );
-            let type   = this.overlay.type;
-            let start  = ! this.overlay.start ? 'top' : this.overlay.start;
-            let color  = ! this.overlay.color ? '#000000' : this.overlay.color;
+        if ( bg.overlay.type ) {
+            let alpha  = ! bg.overlay.alpha ? 0 : parseInt( bg.overlay.alpha );
+            let beta   = ! bg.overlay.beta ? 0 : parseInt( bg.overlay.beta );
+            let type   = bg.overlay.type;
+            let start  = ! bg.overlay.start ? 'top' : bg.overlay.start;
+            let color  = ! bg.overlay.color ? '#000000' : bg.overlay.color;
             alpha      = alpha < 0 ? 0 : alpha;
             alpha      = alpha > 100 ? 100 : alpha;
-            let half   = Math.floor( alpha / 2 );
-            let color1 = this.to_rgba( color, alpha );
-            let color2 = type === 'cover' ? color1 : this.to_rgba( color, half );
+            beta       = beta < 0 ? 0 : beta;
+            beta       = beta > 100 ? 100 : beta;
+            let color1 = SBLCK.BG.ToRgba( color, alpha );
+            let color2 = type === 'cover' ? color1 : SBLCK.BG.ToRgba( color, beta );
             let deg    = '180deg';
             switch ( start ) {
                 case 'bottom':
@@ -384,127 +331,197 @@ function BACKGROUND() {
             }
         }
 
+        let c = bg.color.hex ? SBLCK.BG.ToRgba( bg.color.hex, bg.color.alpha ) : null;
+
         return {
-            backgroundColor      : use.color && use.colorinline && this.color ? this.color : null,
-            backgroundImage      : use.image && this.image.url ? over + 'url(' + this.image.url + ')' : null,
-            backgroundSize       : use.size && this.image.url && size ? size : null,
-            backgroundRepeat     : use.repeat && this.image.url && this.repeat ? this.repeat : null,
-            backgroundAttachment : use.attachment && this.image.url && this.attachment ? this.attachment : null,
-            backgroundBlendMode  : use.blend && this.image.url && this.blend ? this.blend : null
+            backgroundImage      : use.image && bg.image.url ? over + 'url(' + bg.image.url + ')' : null,
+            backgroundSize       : use.size && bg.image.url && size ? size : null,
+            backgroundRepeat     : use.repeat && bg.image.url && bg.repeat ? bg.repeat : null,
+            backgroundAttachment : use.attachment && bg.image.url && bg.attachment ? bg.attachment : null,
+            backgroundPosition   : use.position && bg.image.url && bg.position ? bg.position.x + ' ' + bg.position.y : null,
+            backgroundBlendMode  : use.blend && bg.image.url && bg.blend ? bg.blend : null,
+            backgroundColor      : use.color && use.colorinline && c ? c : null,
         };
     };
 
-    this.Overlay = function ( key, change ) {
-        if ( ! this.image.id ) return;
+    SBLCK.BG.Inspector = function ( key, change, bg, I ) {
+
+        let has            = bg.image.id > 0;
+        bg.uploader.key    = key;
+        bg.uploader.change = change;
+        let use            = key === 'itemBackground' ? USE.item.background : USE.section.background;
+        return (
+            EL(
+                Fragment,
+                {
+                    key : PFX + 'inspector',
+                },
+                use.color ? SBLCK.BG.Color( 'color', change, bg.color ) : null,
+                use.ghost ? SBLCK.BG.Ghost( 'ghost', change, bg.ghost ) : null,
+                EL(
+                    PanelBody,
+                    {
+                        key         : PFX + 'inspector-background-image',
+                        className   : PFX + 'inspector-background-image',
+                        title       : 'Background Image',
+                        initialOpen : false
+                    },
+                    use.image ? SBLCK.BG.Image( 'image', bg.image, change ) : null,
+                    use.attachment && has ? SBLCK.BG.Attachment( 'attachment', change, bg.attachment ) : null,
+                    use.position && has ? SBLCK.BG.Position( 'position', change, bg.position, I ) : null,
+                    use.size && has ? SBLCK.BG.Size( 'size', change, bg.size ) : null,
+                    use.blend && has ? SBLCK.BG.Blend( 'blend', change, bg.blend ) : null,
+                    use.repeat && has ? SBLCK.BG.Repeat( 'repeat', change, bg.repeat ) : null,
+                    use.overlay && has ? SBLCK.BG.Overlay( 'overlay', change, bg.overlay, bg ) : null,
+                )
+            )
+        )
+    };
+
+    SBLCK.BG.Overlay = function ( key, change, val, bg ) {
+
         return EL(
             PanelColorSettings,
             {
                 key           : 'bg-overlay-color',
+                className     : PFX + 'overlay-panel ' + PFX + 'inspector-panel ' + PFX + 'inspector-color',
                 title         : "Overlay Color",
+                help          : "An overlay is laid on top of the background rather than being mixed with it, Iut will"
+                    + " still be affected by the blend mode. The result can be use to decrease contrast or provide a"
+                    + " gradient to fade the image in one direction.",
                 initialOpen   : false,
                 colorSettings : [
                     {
                         label    : 'Select a color',
-                        value    : this.overlay.color,
+                        value    : val,
                         onChange : val => {
-                            this.overlay.color = val;
-                            this.save( key, change );
+                            change( key, val )
                         }
                     }
                 ]
-            }
+            },
+            SBLCK.BG.OverlayOther( bg, change )
         )
     };
 
-    this.OverlayOther = function ( key, change ) {
-        if ( ! this.image.id ) return;
+    SBLCK.BG.OverlayOther = function ( bg, change ) {
+
+        if ( ! bg.image.id ) return;
         return EL(
-            PanelBody,
+            PanelRow,
             {
-                key         : 'pdfskdfsiuemrem',
-                className   : "background-overlay-wrapper",
-                title       : "Overlay Options",
-                initialOpen : false
+                key       : 'overlay-other-row',
+                className : PFX + 'overlay-other-row ' + PFX + 'inspector-row',
             },
+            EL(
+                'p',
+                {
+                    key       : 'overlay-other-title',
+                    className : PFX + 'overlay-other-title ' + PFX + 'inspector-title'
+                },
+                "Overlay Options"
+            ),
             EL(
                 SelectControl,
                 {
-                    key      : "background-overlay-type",
-                    label    : "Type",
-                    help     : "You can add an overlay to the background image to help reduce contrast.",
-                    value    : this.overlay.type,
-                    options  : this.vars.overlay,
-                    onChange : val => {
-                        this.overlay.type = val;
-                        this.save( key, change )
+                    key       : "background-overlay-type",
+                    className : PFX + 'overlay-type ' + PFX + 'inspector-select',
+                    label     : "Type",
+                    help      : "Cover adds the chosen color over the entire image. Gradients apply the color at the "
+                        + "chosen side and fade to transparent. Edges bring the gradient in from the edges to trasparent in the center.",
+                    value     : bg.overlay.type,
+                    options   : VARS.overlay,
+                    onChange  : val => {
+                        change( 'type', val, 'overlay' )
                     }
                 }
             ),
             EL(
-                TextControl,
+                RangeControl,
                 {
-                    key      : 'backgroundoverlaytc1',
-                    label    : "Transparency",
-                    help     : "Number from 1 to 100, as a percentage of how transparent the overlay will be; "
-                        + "gradients always use half this value as the lighter color.",
-                    value    : this.overlay.alpha,
-                    onChange : val => {
-                        this.overlay.alpha = val;
-                        this.save( key, change )
+                    key       : 'backgroundoverlaytc1',
+                    label     : "Starting Transparency",
+                    className : PFX + 'overlay-alpha-start ' + PFX + 'inspector-range',
+                    help      : "Number from 0 to 100, as a percentage of how transparent the overlay will be.",
+                    value     : bg.overlay.alpha,
+                    min       : 0,
+                    max       : 100,
+                    onChange  : val => {
+                        change( 'alpha', val, 'overlay' )
+                    }
+                }
+            ),
+            EL(
+                RangeControl,
+                {
+                    key       : 'backgroundoverlaytc55',
+                    label     : "Ending Transparency",
+                    className : PFX + 'overlay-alpha-beta ' + PFX + 'inspector-range',
+                    help      : "Gradient and Edge use this second value to set the end transparency of the gradient",
+                    value     : bg.overlay.beta,
+                    min       : 0,
+                    max       : 100,
+                    onChange  : val => {
+                        change( 'beta', val, 'overlay' )
                     }
                 }
             ),
             EL(
                 RadioControl,
                 {
-                    key      : 'backgroundoverlaytc2',
-                    label    : "Start Position",
-                    help     : "Used for gradients",
-                    selected : this.overlay.start,
-                    options  : this.vars.start,
-                    onChange : val => {
-                        this.overlay.start = val;
-                        this.save( key, change )
+                    key       : 'backgroundoverlaytc2',
+                    className : PFX + 'overlay-start ' + PFX + 'inspector-radio',
+                    label     : "Start Position",
+                    help      : "Used for gradients, dictates the gradient start position",
+                    selected  : bg.overlay.start,
+                    options   : VARS.start,
+                    onChange  : val => {
+                        change( 'start', val, 'overlay' )
                     }
                 }
             )
         )
     };
 
-    this.Position = function ( key, change ) {
-        if ( this.image.id === 0 ) return;
+    SBLCK.BG.Position = function ( key, change, val ) {
         return (
             EL(
-                PanelBody,
+                PanelRow,
                 {
-                    key         : 'bgposwrap',
-                    className   : "background-position-wrapper",
-                    title       : "Position",
-                    initialOpen : false
+                    key       : 'overlay-position-row',
+                    className : PFX + 'overlay-position-row ' + PFX + 'inspector-row',
                 },
+                EL(
+                    'p',
+                    {
+                        key       : 'overlay-position-title',
+                        className : PFX + 'overlay-position-title ' + PFX + 'inspector-title'
+                    },
+                    "Position"
+                ),
                 EL(
                     TextControl,
                     {
-                        key      : 'bgposwrapptc1',
-                        label    : "Horizontal",
-                        help     : "Requires 'left', 'center', 'right' or CSS value (ex: 33%)",
-                        value    : this.position.x,
-                        onChange : val => {
-                            this.position.x = val;
-                            this.save( key, change );
+                        key       : 'bgposwrapptc1',
+                        label     : "Horizontal",
+                        className : PFX + 'overlay-position-h ' + PFX + 'inspector-text',
+                        help      : "Requires 'left', 'center', 'right' or CSS value (ex: 33%)",
+                        value     : val.x,
+                        onChange  : val => {
+                            change( 'x', val, key )
                         }
                     }
                 ),
                 EL(
                     TextControl,
                     {
-                        key      : 'bgposwrapptc2',
-                        label    : "Vertical",
-                        help     : "Requires 'top', 'center', 'bottom' or CSS value",
-                        value    : this.position.y,
-                        onChange : val => {
-                            this.position.y = val;
-                            this.save( key, change );
+                        key       : 'bgposwrapptc2',
+                        className : PFX + 'overlay-position-y ' + PFX + 'inspector-text',
+                        label     : "Vertical",
+                        help      : "Requires 'top', 'center', 'bottom' or CSS value",
+                        value     : val.y,
+                        onChange  : value => {
+                            change( 'y', value, key )
                         }
                     }
                 )
@@ -512,96 +529,107 @@ function BACKGROUND() {
         )
     };
 
-    this.Repeat = function ( key, change ) {
-        if ( ! this.image.id ) return;
+    SBLCK.BG.Repeat = function ( key, change, val ) {
+
         EL(
-            PanelBody,
+            PanelRow,
             {
-                key         : 'backgroundrepeat1',
-                className   : "background-repeat-wrapper",
-                title       : "Repeat",
-                initialOpen : false
+                key       : 'overlay-repeat-row',
+                className : PFX + 'overlay-repeat-row ' + PFX + 'inspector-row',
             },
+            EL(
+                'p',
+                {
+                    key       : 'overlay-repeat-title',
+                    className : PFX + 'overlay-repeat-title ' + PFX + 'inspector-title'
+                },
+                "Repeat"
+            ),
             EL(
                 RadioControl,
                 {
-                    key      : 'backgroundrepeat3',
-                    label    : "Image will...",
-                    selected : this.repeat,
-                    options  : this.vars.repeat,
-                    help     : "Default is 'repeat'",
-                    onChange : val => {
-                        this.repeat = val;
-                        this.save( key, change )
+                    key       : 'backgroundrepeat3',
+                    className : PFX + 'overlay-repeat ' + PFX + 'inspector-radio',
+                    label     : "Image will...",
+                    selected  : val,
+                    options   : VARS.repeat,
+                    help      : "Default is 'repeat'",
+                    onChange  : val => {
+                        change( key, val )
                     }
                 }
             )
         )
     };
 
-    this.Size = function ( key, change ) {
-        if ( ! this.image.id ) return;
+    SBLCK.BG.Size = function ( key, change, val ) {
         return EL(
-            PanelBody,
+            PanelRow,
             {
-                key         : 'backgroundsizeret',
-                className   : "background-size-wrapper",
-                title       : "Size",
-                initialOpen : false
+                key       : 'size-row',
+                className : PFX + 'size-row ' + PFX + 'inspector-row',
             },
+            EL(
+                'p',
+                {
+                    key       : 'overlay-size-title',
+                    className : PFX + 'overlay-size-title ' + PFX + 'inspector-title'
+                },
+                "Size"
+            ),
             EL(
                 RadioControl,
                 {
-                    key      : 'backgroundsizeretrc',
-                    label    : "Size by Keyword",
-                    selected : this.size.keyword,
-                    options  : this.vars.size,
-                    help     : "If 'None' is selected, you should use the measurement fields below, this field "
+                    key       : 'backgroundsizeretrc',
+                    className : PFX + 'size-keyword ' + PFX + 'inspector-radio',
+                    label     : "Size by Keyword",
+                    selected  : val.keyword,
+                    options   : VARS.size,
+                    help      : "If 'None' is selected, you should use the measurement fields below, this field "
                         + "overrides choices below",
-                    onChange : val => {
-                        this.size.keyword = val;
-                        this.save( key, change )
+                    onChange  : val => {
+                        change( 'size', val, key )
                     }
                 }
             ),
             EL(
                 TextControl,
                 {
-                    key      : 'backgroundsizerettc1',
-                    label    : "Horizontal Size",
-                    help     : "Requires legitimate CSS size value; if Vertical is not filled out, this "
+                    key       : 'backgroundsizerettc1',
+                    className : PFX + 'size-x ' + PFX + 'inspector-text',
+                    label     : "Horizontal Size",
+                    help      : "Requires legitimate CSS size value; if Vertical is not filled out, this "
                         + "value is applied to both dimensions",
-                    value    : this.size.x,
-                    onChange : val => {
-                        this.size.x = val;
-                        this.save( key, change )
+                    value     : val.x,
+                    onChange  : val => {
+                        change( 'x', val, key )
                     }
                 }
             ),
             EL(
                 TextControl,
                 {
-                    key      : 'backgroundsizerettc2',
-                    label    : "Vertical Size",
-                    help     : "Requires legitimate CSS size value; not used if Horizontal is blank",
-                    value    : this.size.y,
-                    onChange : val => {
-                        this.size.y = val;
-                        this.save( key, change )
+                    key       : 'backgroundsizerettc2',
+                    className : PFX + 'size-y ' + PFX + 'inspector-text',
+                    label     : "Vertical Size",
+                    help      : "Requires legitimate CSS size value; not used if Horizontal is blank",
+                    value     : val.y,
+                    onChange  : val => {
+                        change( 'y', val, key )
                     }
                 }
             )
         )
     };
 
-    this.SizeCalc = function () {
+    SBLCK.BG.SizeCalc = function ( size ) {
         let ret = '';
-        ret     = this.size.x && this.size.y ? this.size.x + ' ' + this.size.y : ret;
-        ret     = this.size.x ? this.size.x : ret;
+        ret     = size.x && size.y ? size.x + ' ' + size.y : ret;
+        ret     = size.x ? size.x : ret;
         return ret;
     };
 
-    this.to_rgba = function ( color, opacity, css ) {
+    SBLCK.BG.ToRgba = function ( color, opacity, css ) {
         let rgb = color.match( /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i );
         rgb     = ! rgb ?
             color.match( /^#([0-9a-f])([0-9a-f])([0-9a-f])$/i )
@@ -611,26 +639,28 @@ function BACKGROUND() {
             rgb.slice( 1, 4 ).map( function ( x ) {
                 return parseInt( x, 16 );
             } );
-        opacity = typeof( opacity ) === 'undefined' ? 1 : parseFloat( opacity );
+        opacity = typeof ( opacity ) === 'undefined' ? 1 : parseFloat( opacity );
         opacity = opacity > 100 ? 1 : opacity;
         opacity = opacity > 1 ? opacity / 100 : opacity;
         rgb.push( opacity );
-        if ( typeof( css ) === 'undefined' || css ) {
+        if ( typeof ( css ) === 'undefined' || css ) {
             return 'rgba( ' + rgb.join() + ')';
         } else {
             return rgb;
         }
     };
 
-    this.Type = function () {
+    SBLCK.BG.Type = function ( bg ) {
         let type = null;
-        if ( this.color && this.image.url && this.blend ) {
+        if ( bg.color && bg.image.url && bg.blend ) {
             type = 'blend';
-        } else if ( this.image.url ) {
+        } else if ( bg.image.url ) {
             type = 'image';
-        } else if ( this.color ) {
+        } else if ( bg.color ) {
             type = 'color';
         }
         return type;
     };
-}
+
+
+}( window.SBLCK = window.SBLCK || {} ) );

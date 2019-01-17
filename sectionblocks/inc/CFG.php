@@ -147,7 +147,7 @@ class CFG {
 	 *
 	 * @return array
 	 */
-	public function parse_args_r( &$a, $b, $replace_empty_a = TRUE, $allow_empty_b = FALSE, $type_match = FALSE ) {
+	public function parse_args_r( &$a, $b, $replace_empty_a = TRUE, $allow_empty_b = FALSE, $remove_a = FALSE, $type_match = FALSE ) {
 		
 		$a = is_array( $a ) ? $a : (array) $a;
 		$b = is_array( $b ) ? $b : (array) $b;
@@ -165,6 +165,10 @@ class CFG {
 				continue;
 			}
 			
+			if ( $remove_a && ! isset( $r[ $ak ] ) ) {
+				continue;
+			}
+			
 			// the type match flag is set, and the types don't match
 			if ( $type_match && isset( $r[ $ak ] ) && $av !== null && gettype( $r[ $ak ] ) !== gettype( $av ) ) {
 				$r[ $ak ] = $av;
@@ -176,6 +180,42 @@ class CFG {
 		}
 		
 		return $r;
+	}
+	
+	/**
+	 * Removes a key from this->CFG, even if nested
+	 *
+	 * @param $root_dots
+	 * @param $key
+	 */
+	public function remove( $root_dots, $key ) {
+		
+		$keys = explode( '.', $root_dots );
+		$orig = $this->CFG;
+		
+		$this->remove_recurse( $orig, $key, $keys );
+	
+		$this->CFG = $orig;
+	}
+	
+	/**
+	 * Recursive function to remove nested element from array.
+	 *
+	 * @param     $array
+	 * @param     $key
+	 * @param     $keys
+	 * @param int $depth
+	 */
+	public function remove_recurse( &$array, $key, $keys, $depth = 1 ) {
+		foreach( $array as $array_key => &$array_value ) {
+			if ( $depth > count( $keys ) ) {
+				continue;
+			} else if ( $depth === count( $keys ) && $array_key === $key && isset( $array[ $key ]) ) {
+				unset( $array[ $key ] );
+			} else if ( is_array( $array_value ) && $array_key === $keys[ $depth - 1 ] ) {
+				$this->remove_recurse( $array_value, $key, $keys, $depth ++ );
+			}
+		}
 	}
 	
 	/**

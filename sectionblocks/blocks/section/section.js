@@ -1,22 +1,31 @@
 /**
  * @typedef  {Object}  SBLCK
- * @property {Object}  blocks
- * @property {Object}  blocks.section
- * @property {Object}  blocks.section.cfg
- * @property {Object}  blocks.section.cfg.attributes
- * @property {Object}  blocks.section.cfg.attributes.alignment
- * @property {Object}  blocks.section.cfg.attributes.background
- * @property {Object}  blocks.section.cfg.attributes.bClass
- * @property {Object}  blocks.section.cfg.attributes.bItems
- * @property {Array}   blocks.section.cfg.attributes.bItems.allowed
- * @property {Object}  blocks.section.inspector
- * @property {Object}  blocks.section.inspector.panel
- * @property {SLCT[]}  selects.bClass
- * @property {SLCT[]}  selects.iClass
- * @property {Object}  plugin
- * @property {Object}  plugin.use
- * @property {Object}  plugin.use.section
- * @property {Boolean} plugin.use.section.bClass
+ * @property {Object}  CFG
+ * @property {Object}  CFG.blocks
+ * @property {Object}  CFG.blocks.section
+ * @property {Object}  CFG.blocks.section.cfg
+ * @property {Object}  CFG.blocks.section.cfg.attributes
+ * @property {Object}  CFG.blocks.section.cfg.attributes.alignment
+ * @property {Object}  CFG.blocks.section.cfg.attributes.background
+ * @property {Object}  CFG.blocks.section.cfg.attributes.bClass
+ * @property {Object}  CFG.blocks.section.cfg.attributes.bItems
+ * @property {Array}   CFG.blocks.section.cfg.attributes.bItems.allowed
+ * @property {Object}  CFG.blocks.section.cfg.attributes.bLimit
+ * @property {Object}  CFG.blocks.section.cfg.attributes.bFlex
+ * @property {Object}  CFG.blocks.section.cfg.attributes.bFlexSmall
+ * @property {Object}  CFG.blocks.section.cfg.attributes.bFlexMedium
+ * @property {Object}  CFG.blocks.section.cfg.attributes.bFlexTablet
+ * @property {Object}  CFG.blocks.section.cfg.attributes.bFlexDesktop
+ * @property {Object}  CFG.blocks.section.inspector
+ * @property {Object}  CFG.blocks.section.inspector.panel
+ * @property {SLCT[]}  CFG.selects.bClass
+ * @property {SLCT[]}  CFG.selects.iClass
+ * @property {Object}  CFG.use
+ * @property {Object}  CFG.use.section
+ * @property {Boolean} CFG.use.section.bClass
+ * @property {Object}  INSPECTOR
+ * @property {Object}  PANEL
+ * @property {function} Random
  */
 
 /**
@@ -29,12 +38,16 @@
 ( function ( BLOCK, ED, COMP, EL ) {
 
     const { registerBlockType }                                               = BLOCK;
-    const { SelectControl }                                                   = COMP;
+    const { PanelBody, SelectControl }                                        = COMP;
     const { AlignmentToolbar, BlockControls, InnerBlocks, InspectorControls } = ED;
 
-    const BKT  = SBLCK.blocks.section;
+    const CFG  = SBLCK.CFG;
+    const BKT  = CFG.blocks.section;
     const BKTA = BKT.cfg.attributes;
-    const USE  = SBLCK.plugin.use.section;
+    const USE  = CFG.use.section;
+    const SEL  = CFG.selects;
+    const PANEL = SBLCK.PANEL;
+    const INSPECTOR = SBLCK.INSPECTOR;
 
     registerBlockType( 'sectionblock/section', {
 
@@ -42,44 +55,46 @@
 
         edit       : function ( props ) {
 
-            const I = props.clientId;
-
-            SBLCK_STORE[ I ] = typeof ( SBLCK_STORE[ I ] ) !== 'undefined' ?
-                SBLCK_STORE[ I ] :
-                { bg : new BACKGROUND(), cm : new SBLCK_COMMON() };
-
-            const onTextChange = ( key, val ) => {
+            const saveProp = ( key, val ) => {
                 props.setAttributes( { [ key ] : val } );
             };
 
-            let alignment = props.attributes.alignment ?
-                props.attributes.alignment :
-                onTextChange( 'alignment', 'center' );
+            const saveBG = ( key, val, parent ) => {
+                let b = props.attributes.background;
+                if ( typeof( parent ) !== 'undefined' ) {
+                    b[ parent ][ key ] = val;
+                } else  {
+                    b[ key ] = val;
+                }
+                props.setAttributes( { background: b } );
+                props.setAttributes( { updated: Date.now() } );
+            };
 
-            let background = props.attributes.background ?
-                props.attributes.background :
-                {};
+            let alignment = props.attributes.alignment ? props.attributes.alignment : saveProp( 'alignment', 'center' );
 
             let bClass = props.attributes.bClass ?
                 props.attributes.bClass :
-                onTextChange( 'bClass', SBLCK.selects.bClass[ 0 ][ 'value' ] );
+                saveProp( 'bClass', SEL.bClass[ 0 ].value );
 
-            if ( ! background.hasOwnProperty( 'image' ) ) {
-                SBLCK_STORE[ I ].bg.save( 'background', onTextChange );
-            }
+            let showB =
+                    typeof ( SEL.bClass ) !== 'undefined'
+                    && ! ( SEL.bClass.length === 1 && SEL.bClass[ 0 ].value === '' )
+                    && USE.bClass;
 
-            if ( typeof ( background ) === 'object' ) {
-                SBLCK_STORE[ I ].bg.assign( background );
-            }
+            let advanced = props.attributes.className ? props.attributes.className : '';
+
+            let bFlex = !! props.attributes.bFlex;
+
+            let background = props.attributes.background ? props.attributes.background : SBLCK.BG.GetProps();
 
             return EL(
+
                 BKT.cfg.tagName,
                 {
-                    className : 'sectionblock-section'
-                        + SBLCK_STORE[ I ].bg.class()
-                        + itemsClasses( bClass, SBLCK.selects.bClass ),
-                    style     : SBLCK_STORE[ I ].bg.style( 'section' )
+                    className : SBLCK.BG.Classes( background ) + addClasses( bClass, SEL.bClass, advanced, bFlex ),
+                    style     : SBLCK.BG.InlineStyle( 'section', background )
                 },
+
                 EL(
                     BlockControls,
                     {},
@@ -88,50 +103,58 @@
                         {
                             value    : alignment,
                             onChange : val => {
-                                onTextChange( 'alignment', val )
+                                saveProp( 'alignment', val )
                             }
                         }
                     )
                 ),
+
                 EL(
                     InspectorControls,
                     {
-                        key: 'ins-bclass'
+                        key       : 'ins-bclass',
+                        className : 'sectionblock-inspector'
                     },
-                    USE.bClass ?
-                        EL(
+                    EL(
+                        PanelBody,
+                        PANEL.Atts( 'display', BKT ),
+                        PANEL.Desc( 'display', BKT ),
+                        showB ? EL(
                             SelectControl,
                             {
-                                key      : 'ins-bclass-el',
-                                label    : BKTA.bClass.label,
-                                help     : BKTA.bClass.help,
-                                options  : SBLCK.selects.bClass,
-                                value    : bClass,
-                                onChange : val => {
-                                    onTextChange( 'bClass', val )
+                                key       : 'ins-bclass-el',
+                                className : BKTA.bClass.className,
+                                label     : BKTA.bClass.label,
+                                help      : BKTA.bClass.help,
+                                options   : SEL.bClass,
+                                value     : bClass,
+                                onChange  : val => {
+                                    saveProp( 'bClass', val )
                                 }
                             }
                         ) : null,
-                    SBLCK_STORE[ I ].bg.inspector( 'background', onTextChange, SBLCK_STORE[ I ].bg.image )
+                        USE.bFlex ? INSPECTOR.Toggle( 'bFlex', bFlex, saveProp, BKT ) : null,
+                    ),
+                    SBLCK.BG.Inspector( 'background', saveBG, background )
                 ),
-                SBLCK_STORE[ I ].cm.ghost( background ),
+
+                USE.background.ghost ? SBLCK.BG.GhostDisplay( background ) : null,
+
                 EL(
                     BKTA.bItems.tagName,
                     {
-                        key: 'items',
+                        key       : 'items',
                         className : BKTA.bItems.className
                     },
                     EL(
                         InnerBlocks,
-                        {
-                            key           : 'items-innerblocks'
-                        }
+                        innerblocksParams()
                     )
                 )
             )
         },
         save       : function () {
-            return EL ( InnerBlocks.Content );
+            return EL( InnerBlocks.Content );
         },
         deprecated : []
     } );
@@ -140,14 +163,38 @@
      * Add classes to the items container
      *
      * @param itemType
-     * @param stys
+     * @param showB
+     * @param advanced
+     * @param bFlex
      * @returns {string}
      */
-    function itemsClasses( itemType, stys ) {
+    function addClasses( itemType, showB, advanced, bFlex ) {
 
-        itemType = typeof ( itemType ) !== 'undefined' ? itemType : stys[ 0 ];
+        itemType = typeof ( itemType ) !== 'undefined' && showB ? itemType : '';
+        itemType = ! itemType && showB ? SEL.bClass[ 0 ][ 'value' ] : itemType;
 
-        return ' ' + itemType;
+        let flex = bFlex ? ' sectionblock-flex' : '';
+        let adv = advanced ? ' ' + advanced : '';
+
+        return ' sectionblock-section ' + itemType + adv + flex;
+    }
+
+    /**
+     * Because gutenberg takes an empty allowed array as meaning "no blocks allowed" we check for length
+     *
+     * @returns {{key: string}}
+     */
+    function innerblocksParams() {
+
+        let i = {
+            key : 'items-innerblocks'
+        };
+
+        if ( BKTA.bItems.allowed.length ) {
+            i.allowed = BKTA.bItems.allowed
+        }
+
+        return i;
     }
 
 } )( wp.blocks, wp.editor, wp.components, wp.element.createElement );
