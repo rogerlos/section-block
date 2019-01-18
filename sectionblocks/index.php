@@ -3,7 +3,7 @@
 Plugin Name: Section & Feature Blocks
 Plugin URI: https://github.com/rogerlos/section-block
 Description: Adds "Section" and "Feature" blocks to WordPress editor. Work in Progress!
-Version: 1.3.3
+Version: 1.3.4
 Author: Roger Los
 Author URI: http://rogerlos.com
 License: GPL2
