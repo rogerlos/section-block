@@ -2,6 +2,8 @@
 
 namespace sectionblock\background;
 
+use \sectionblock\util as UTIL;
+
 /**
  * Background class.
  *
@@ -14,30 +16,36 @@ function classes( $background ) {
 	global $SBLCK;
 	
 	$typ = type( $background );
+	$ret = '';
 	
-	$ret = 'blend' === $typ ? ' has-bg has-bg-image has-bg-color has-bg-blend' : '';
-	$ret = ! $ret && 'image' === $typ ? ' has-bg has-bg-image' : $ret;
-	$ret = ! $ret && 'color' === $typ ? ' has-bg has-bg-color' : $ret;
-	
-	// apply a background color class
-	if ( $ret && $ret !== 'image' ) {
+	if ( $typ ) {
 		
-		$bgcolorclass = '';
-		$colors       = apply_filters( 'sectionblock_background_color_array', $SBLCK->get( 'colors' ), $background );
+		$ret .= ' has-bg';
 		
-		if ( ! empty( $colors ) ) {
+		$ret .= 'blend' === $typ ? ' has-bg-image has-bg-blend has-bg-color' : '';
+		$ret .= 'image' === $typ ? ' has-bg-image' : '';
+		$ret .= 'color' === $typ ? ' has-bg-color' : '';
+		
+		// apply a background color class
+		if ( ! empty( $background['color'] ) ) {
 			
-			foreach ( $colors as $hex => $class ) {
-				if ( $background['color'] === $hex ) {
-					$bgcolorclass = $class;
+			$bgcolorclass = '';
+			$colors       = apply_filters( 'sectionblock_background_color_array', $SBLCK->get( 'colors' ), $background );
+			
+			if ( ! empty( $colors ) ) {
+				
+				foreach ( $colors as $col ) {
+					if ( $background['color']['hex'] === $col['color'] ) {
+						$bgcolorclass = '-' . $col['slug'];
+					}
 				}
+				
+			} else {
+				$bgcolorclass = '-' . str_replace( '#', '', $background['color']['hex'] );
 			}
 			
-		} else {
-			$bgcolorclass = ' has-' . str_replace( '#', '', $background['color'] ) . '-background-color';
+			$ret .= $bgcolorclass;
 		}
-		
-		$ret .= $bgcolorclass;
 	}
 	
 	// allow filtering the class string
@@ -105,7 +113,7 @@ function size( $background ) {
 	}
 	
 	$x = $background['size']['x'];
-	$y = ! empty( $background['size']['y'] ) ? $background['size']['y'] : '';
+	$y = ! empty( $background['size']['y'] ) ? $background['size']['y'] : 'auto';
 	
 	$ret = $x && $y ? $x . ' ' . $y : $ret;
 	$ret = $x ? $x : $ret;
@@ -123,42 +131,94 @@ function size( $background ) {
 function style( $background ) {
 	
 	$ret = '';
+	$over = style_overlay( $background );
+	$blend = [];
+	$overlay = [];
+	$B = $background;
 	
-	$size = size( $background );
-	$size = ! $size && ! empty( $background['size']['keyword'] ) ? $background['size']['keyword'] : $size;
+	/*
+	 * Fix blend if wrong
+	 */
 	
-	$img  = ! empty( $background['image'] ) ?
-		$background['image'] : [ 'url' => '' ];
+	if ( is_string( $B['blend'] ) ) {
+		$B['blend'] = [
+			'type' => $B['blend'],
+			'desaturate' => 0,
+		];
+	}
 	
-	$overlay = ! empty( $background['overlay']['type'] ) && ! empty( $img['url'] ) ?
-		style_overlay( $background ) : '';
+	/*
+	 * Sizing
+	 */
 	
-	$color = ! empty( $background['colorinline'] ) ? $background['colorinline'] : null;
+	$size = size( $B );
+	$size = ! $size && ! empty( $B['size']['keyword'] ) ? $B['size']['keyword'] : $size;
+	
+	/*
+	 * Image
+	 */
+	
+	$img  = ! empty( $B['image'] ) ? $B['image'] : [ 'url' => '' ];
+	
+	/*
+	 * Overlay
+	 */
+	
+	$overlay = ! empty( $B['overlay']['type'] ) && ! empty( $img['url'] ) && ! empty( $over['over'] ) ?
+		$overlay + $over['over'] : $overlay;
+	$blend = ! empty( $B['overlay']['type'] ) && ! empty( $img['url'] ) && ! empty( $over['over'] ) ?
+		$blend + $over['blend'] : $blend;
+	
+	/*
+	 * Color
+	 */
+	
+	$color = ! empty( $B['colorinline'] ) ? $B['colorinline'] : null;
 	$color = is_array( $color ) && ! empty( $color['hex'] ) ?
-		\sectionblock\util\to_rgba( $color['hex'], $color['alpha'] ) : $color;
+		UTIL\to_rgba( $color['hex'], $color['alpha'] ) : $color;
 	
-	$ret .= ! empty( $color ) ?
-		'background-color:' . $color . ';' : '';
+	if ( $color && ! empty( $img['url'] ) && ! empty( $B['blend']['type'] ) ) {
+		$overlay[] = 'linear-gradient( ' . $color . ', ' . $color . ')';
+		$blend[] = ! empty( $B['blend']['type'] )  && ! empty( $img['url'] ) ? $B['blend']['type'] : 'normal';
+	}
 	
-	$ret .= $ret && ! empty( $img['url'] ) ?
-		'background-image:' . $overlay . 'url(' . $img['url'] . ');' : '';
+	/*
+	 * Desaturate
+	 */
+	if ( ! empty( $B['blend']['desaturate'] ) && ! empty( $img['url'] ) ) {
+		$overlay[] = 'linear-gradient( rgba(0,0,0,' . intval( $B['blend']['desaturate'] )
+		             . '), rgba(0,0,0,' . intval( $B['blend']['desaturate'] ) . '))';
+		$blend[] = 'color';
+	}
 	
-	$ret .= $ret && $size ?
-		'background-size:' . $size . ';' : '';
+	/*
+	 * Image
+	 */
 	
-	$ret .= $ret && ! empty( $background['repeat'] ) ?
-		'background-repeat:' . $background['repeat'] . ';' : '';
+	if ( ! empty( $img['url'] ) ) {
+		$overlay[] = 'url(' . $img['url'] . ')';
+		$blend[] = 'normal';
+	}
 	
-	$ret .= $ret && ! empty( $background['attachment'] ) ?
-		'background-attachment:' . $background['attachment'] . ';' : '';
+	/*
+	 * Returned properties
+	 */
 	
-	$ret .= $ret && ! empty( $background['position'] ) ?
-		'background-position:' . $background['position']['x'] . ' ' . $background['position']['y'] . ';' : '';
+	$ret .= ! empty( $overlay ) ? 'background-image:' . implode( ',', $overlay ) . ';' : '';
 	
-	$ret .= $ret && ! empty( $background['blend'] ) ?
-		'background-blend-mode:' . $background['blend'] . ';' : '';
+	$ret .= $size ? 'background-size:' . $size . ';' : '';
 	
-	$filtered = apply_filters( 'sectionblock_background_inline_styles', $ret, $background );
+	$ret .= ! empty( $B['repeat'] ) ? 'background-repeat:' . $B['repeat'] . ';' : '';
+	
+	$ret .= ! empty( $B['attachment'] ) ? 'background-attachment:' . $B['attachment'] . ';' : '';
+	
+	$ret .= ! empty( $B['position'] ) ? 'background-position:' . $B['position']['x'] . ' ' . $B['position']['y'] . ';' : '';
+	
+	$ret .= ! empty( $blend ) ? 'background-blend-mode:' . implode( ',', $blend ) . ';' : '';
+	
+	$ret .= ! empty( $color ) ? 'background-color:' . $color . ';' : '';
+	
+	$filtered = apply_filters( 'sectionblock_background_inline_styles', $ret, $B );
 	
 	return $filtered ? ' style="' . $filtered . '"' : '';
 }
@@ -168,70 +228,79 @@ function style( $background ) {
  *
  * @param $background
  *
- * @return string
+ * @return array
  */
 function style_overlay( $background ) {
 	
 	global $SBLCK;
 	
+	$O = $background['overlay'];
+	
+	$ret = [
+		'over' => [],
+		'blend' => [],
+	];
+	
+	if ( empty( $O['type'] ) || empty( $O['color'] ) ) {
+		return $ret;
+	}
+	
 	$types = $SBLCK->get( 'background.overlays' );
 	
-	$params = [
-		'alpha'        => empty( $background['overlay']['alpha'] ) ? 100 : intval( $background['overlay']['alpha'] ),
-		'beta'        => empty( $background['overlay']['beta'] ) ? 0 : intval( $background['overlay']['beta'] ),
-		'colors'       => [
-			'original' => empty( $background['overlay']['color'] ) ? '#000000' : $background['overlay']['color'],
+	$P = [
+		'alpha'        => empty( $O['alpha'] ) ? 100 : intval( $O['alpha'] ),
+		'beta'        => empty( $O['beta'] ) ? 0 : intval( $O['beta'] ),
+		'clr'       => [
+			'original' => empty( $O['color'] ) ? 'transparent' : $O['color'],
 			'a'        => '',
 			'b'        => '',
 		],
 		'deg'          => '180deg',
 		'edge_opacity' => '20%',
-		'start'        => empty( $background['overlay']['start'] ) ? 'top' : $background['overlay']['start'],
-		'type'         => empty( $background['overlay']['type'] ) ? '' : $background['overlay']['type'],
+		'start'        => empty( $O['start'] ) ? 'top' : $O['start'],
+		'type'         => empty( $O['type'] ) ? '' : $O['type'],
 	];
 	
-	$params['type'] = empty( $params['type'] ) || ! in_array( $params['type'], $types ) ? '' : $params['type'];
+	$P['type'] = empty( $P['type'] ) || ! in_array( $P['type'], $types ) ? '' : $P['type'];
 	
-	$params['alpha'] = $params['alpha'] < 0 ? 0 : $params['alpha'];
-	$params['alpha'] = $params['alpha'] > 100 ? 100 : $params['alpha'];
+	$P['alpha'] = $P['alpha'] < 0 ? 0 : $P['alpha'];
+	$P['alpha'] = $P['alpha'] > 100 ? 100 : $P['alpha'];
 	
-	$params['colors']['a'] = \sectionblock\util\to_rgba( $params['colors']['original'], $params['alpha'] );
-	$params['colors']['b'] = $params['type'] === 'cover' ?
-		$params['colors']['a'] : \sectionblock\util\to_rgba( $params['colors']['original'], $params['beta'] );
+	$P['clr']['a'] = UTIL\to_rgba( $P['clr']['original'], $P['alpha'] );
+	$P['clr']['b'] = $P['type'] === 'cover' ? $P['clr']['a'] : UTIL\to_rgba( $P['clr']['original'], $P['beta'] );
 	
-	switch ( $params['start'] ) {
+	switch ( $P['start'] ) {
 		case 'bottom':
-			$params['deg'] = '0deg';
+			$P['deg'] = '0deg';
 			break;
 		case 'left':
-			$params['deg'] = '90deg';
+			$P['deg'] = '90deg';
 			break;
 		case 'right':
-			$params['deg'] = '270deg';
+			$P['deg'] = '270deg';
 			break;
 	}
 	
-	$params = apply_filters( 'sectionblock_overlay_params', $params, $background );
+	$P = apply_filters( 'sectionblock_overlay_params', $P, $background );
 	
-	$ret = '';
-	
-	switch ( $params['type'] ) {
+	switch ( $P['type'] ) {
 		
 		case 'cover':
 		case 'gradient':
-			$ret = 'linear-gradient(' . $params['deg'] . ',' . $params['colors']['a'] . ','
-			       . $params['colors']['b'] . '),';
+			$ret['over'][] = 'linear-gradient(' . $P['deg'] . ',' . $P['clr']['a'] . ',' . $P['clr']['b'] . ')';
+			$ret['blend'][] = 'normal';
 			break;
 		
 		case 'edges':
-			$ret = 'linear-gradient(0deg,' . $params['colors']['a'] . ',' . $params['colors']['b']
-			       . ' ' . $params['edge_opacity'] . ',' . $params['colors']['b'] . '),';
-			$ret .= 'linear-gradient(90deg,' . $params['colors']['a'] . ',' . $params['colors']['b']
-			        . ' ' . $params['edge_opacity'] . ',' . $params['colors']['b'] . '),';
-			$ret .= 'linear-gradient(180deg,' . $params['colors']['a'] . ',' . $params['colors']['b']
-			        . ' ' . $params['edge_opacity'] . ',' . $params['colors']['b'] . '),';
-			$ret .= 'linear-gradient(270deg,' . $params['colors']['a'] . ',' . $params['colors']['b']
-			        . ' ' . $params['edge_opacity'] . ',' . $params['colors']['b'] . '),';
+			$ret['over'][] = 'linear-gradient(0deg,' . $P['clr']['a'] . '' . $P['clr']['b']
+			       . ' ' . $P['edge_opacity'] . ',' . $P['clr']['b'] . ')';
+			$ret['over'][] .= 'linear-gradient(90deg,' . $P['clr']['a'] . ',' . $P['clr']['b']
+			        . ' ' . $P['edge_opacity'] . ',' . $P['clr']['b'] . ')';
+			$ret['over'][] .= 'linear-gradient(180deg,' . $P['clr']['a'] . ',' . $P['clr']['b']
+			        . ' ' . $P['edge_opacity'] . ',' . $P['clr']['b'] . ')';
+			$ret['over'][] .= 'linear-gradient(270deg,' . $P['clr']['a'] . ',' . $P['clr']['b']
+			        . ' ' . $P['edge_opacity'] . ',' . $P['clr']['b'] . ')';
+			$ret['blend'] = [ 'normal', 'normal','normal','normal', ];
 			break;
 	}
 	

@@ -56,12 +56,22 @@
         edit       : function ( props ) {
 
             const saveProp = ( key, val ) => {
+
                 props.setAttributes( { [ key ] : val } );
             };
 
             const saveBG = ( key, val, parent ) => {
-                let b = props.attributes.background;
+
+                let b = props.attributes.background ? props.attributes.background : SBLCK.BG.GetProps();
+
                 if ( typeof( parent ) !== 'undefined' ) {
+
+                    if ( ! b[ parent ].hasOwnProperty( key ) ) {
+                        let check = SBLCK.BG.GetProps();
+                        if ( check[ parent ].hasOwnProperty( key ) ) {
+                            b[ parent ] = check[ parent ];
+                        }
+                    }
                     b[ parent ][ key ] = val;
                 } else  {
                     b[ key ] = val;
@@ -144,7 +154,7 @@
                     BKTA.bItems.tagName,
                     {
                         key       : 'items',
-                        className : BKTA.bItems.className
+                        className : BKTA.bItems.className + innerClasses( alignment )
                     },
                     EL(
                         InnerBlocks,
@@ -176,7 +186,18 @@
         let flex = bFlex ? ' sectionblock-flex' : '';
         let adv = advanced ? ' ' + advanced : '';
 
-        return ' sectionblock-section ' + itemType + adv + flex;
+        return ' wp-block-sectionblock-section sectionblock-section ' + itemType + adv + flex;
+    }
+
+    /**
+     * Adds alignment class to inner wrapper
+     *
+     * @param alignment
+     * @returns {string}
+     */
+    function innerClasses( alignment ) {
+
+        return typeof( alignment ) !== 'undefined' ? ' align-items-' + alignment : '';
     }
 
     /**

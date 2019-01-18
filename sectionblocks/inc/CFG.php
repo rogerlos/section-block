@@ -5,6 +5,14 @@ namespace sectionblock;
 /**
  * CFG class
  *
+ * This is a generic "shared data" class. Generally, when initializing, passing it an array of paths will cause those
+ * paths to be searched (not recursively) for JSON files, which are then added to the global CFG object as associative
+ * arrays.
+ *
+ * Note that files with the same name from different paths will be merged with the previous path's version of the array.
+ *
+ * Adding an underscore to the beginning of the filename will protect that file from being overwritten.
+ *
  * @since  1.0
  */
 class CFG {
@@ -100,6 +108,40 @@ class CFG {
 	}
 	
 	/**
+	 * Reciprocal method to allow dots-referenced values to be inserted into an array.
+	 *
+	 * $dots  = 'a.b.c'
+	 * $value = 'whatever'
+	 *
+	 * returns [
+	 *   'a' => [
+	 *     'b' => [
+	 *       'c' => 'whatever'
+	 *     ]
+	 *   ]
+	 * ]
+	 *
+	 * @since  1.0
+	 *
+	 * @param string $dots  : The "dots" key
+	 * @param mixed  $value : Value to save
+	 *
+	 * @return array
+	 */
+	public function dots_to_array( $dots, $value ) {
+		
+		$ex = explode( '.', $dots );
+		
+		while ( ! empty( $ex ) ) {
+			$inner = array_pop( $ex );
+			$array = [ $inner => $value ];
+			$value = $array;
+		}
+		
+		return $value;
+	}
+	
+	/**
 	 * Public getter of config data
 	 *
 	 * @since  1.0
@@ -114,6 +156,52 @@ class CFG {
 		$ret = empty( $dots ) ? $this->CFG : $this->dots( $dots, $this->CFG );
 		
 		return $txt ? $this->txt( $ret, $txt ) : $ret;
+	}
+	
+	/**
+	 * Checks if the array is associative or not
+	 *
+	 * @param array $array
+	 *
+	 * @return bool
+	 */
+	public function has_string_keys( $array ) {
+	
+		return count( array_filter( array_keys( $array ), 'is_string' ) ) > 0;
+	}
+	
+	/**
+	 * Either:
+	 * - reads JSON from disk from passed array of paths
+	 * - adds passed JSON-encoded string to passed config array
+	 *
+	 * @since  1.0
+	 *
+	 * @param array|string $cfg : Either an array of paths or a JSON encoded string
+	 * @param array        $CFG : Optional - Existing configuration array if passing a string
+	 * @param string       $key : Optional - Key to add to
+	 *
+	 * @return mixed
+	 */
+	public function json_cfg( $cfg, $CFG = [], $key = '' ) {
+		
+		$test = is_string( $cfg ) ? json_decode( $cfg, TRUE ) : NULL;
+		
+		if ( $test === NULL ) {
+			
+			$cfg = $this->read_json_from_disk( $cfg );
+			$CFG = $this->parse_args_r( $cfg, $CFG );
+			
+		} else if ( $key && $test ) {
+			
+			$CFG[ $key ] = $test;
+			
+		} else if ( $test ) {
+			
+			$CFG = $test;
+		}
+		
+		return $CFG;
 	}
 	
 	/**
@@ -147,7 +235,7 @@ class CFG {
 	 *
 	 * @return array
 	 */
-	public function parse_args_r( &$a, $b, $replace_empty_a = TRUE, $allow_empty_b = FALSE, $remove_a = FALSE, $type_match = FALSE ) {
+	public function parse_args_r( &$a, $b, $replace_empty_a = TRUE, $allow_empty_b = FALSE,  $type_match = FALSE ) {
 		
 		$a = is_array( $a ) ? $a : (array) $a;
 		$b = is_array( $b ) ? $b : (array) $b;
@@ -165,10 +253,6 @@ class CFG {
 				continue;
 			}
 			
-			if ( $remove_a && ! isset( $r[ $ak ] ) ) {
-				continue;
-			}
-			
 			// the type match flag is set, and the types don't match
 			if ( $type_match && isset( $r[ $ak ] ) && $av !== null && gettype( $r[ $ak ] ) !== gettype( $av ) ) {
 				$r[ $ak ] = $av;
@@ -180,6 +264,123 @@ class CFG {
 		}
 		
 		return $r;
+	}
+	
+	/**
+	 * Reads file from disk. If not valid JSON or file doesn't exist, returns empty array.
+	 *
+	 * @since  1.0
+	 *
+	 * @param string $file : full path on disk to JSON file
+	 *
+	 * @return array|mixed|object
+	 */
+	public function read_json_cfg( $file ) {
+		
+		if ( ! file_exists( $file ) ) {
+			return [];
+		}
+		
+		$json = json_decode( file_get_contents( $file ), TRUE );
+		
+		return $json === NULL ? [] : $json;
+	}
+	
+	/**
+	 * Reads JSON from disk given an array of paths. Each JSON file will be added to resulting config array
+	 * using the filename(s) minus '.json' as the root key(s).
+	 *
+	 * Paths can be individual files, or a directory. If a directory, all JSON files in that directory will be added
+	 * without recursing into sub-directories.
+	 *
+	 * $paths = [
+	 *   '../foo.json',
+	 *   '../cfg_dir'
+	 * ]
+	 *
+	 * returns (assuming valid JSON is found, and cfg_dir contained 'bar.json' and 'baz.json'):
+	 *
+	 * [
+	 *   'foo' => [...] ,
+	 *   'bar' => [...] ,
+	 *   'baz' => [...]
+	 * ]
+	 *
+	 * @todo: I do not think underscore files are actually protected in this iteration.
+	 *
+	 * @since  1.0
+	 *
+	 * @param  array $paths : array of paths
+	 *
+	 * @return array
+	 */
+	public function read_json_from_disk( $paths ) {
+		
+		$json  = [];
+		$add_parent = [];
+		$paths = ! is_array( $paths ) ? (array) $paths : $paths;
+		
+		foreach ( $paths as $path ) {
+			
+			if ( ! is_dir( $path ) && file_exists( $path ) ) {
+				
+				$read = $this->read_json_cfg( $path );
+				$json = ! empty( $json ) ? $this->parse_args_r( $read, $json ) : $read;
+				
+			} else if ( is_dir( $path ) ) {
+				
+				$dh = opendir( $path );
+				$base = basename( $path );
+				
+				while ( ( $file = readdir( $dh ) ) !== FALSE ) {
+					
+					if ( $file != "." && $file != ".." && ! is_dir( $path . $file ) ) {
+						
+						$ext = substr( strrchr( $file, "." ), 1 );
+						
+						// skip non-json files
+						if ( $ext !== 'json' ) {
+							continue;
+						}
+						
+						// key is the filename minus extension
+						$key = substr( $file, 0, ( strlen( $file ) - 5 ) );
+						
+						// keys with underscores as first character do not get merged
+						$nomerge = FALSE;
+						if ( substr( $file, 0, 1 ) == '_' ) {
+							$key     = ltrim( $key, '_' );
+							$nomerge = TRUE;
+						}
+						
+						$read = $this->read_json_cfg( $path . $file );
+						
+						if ( in_array( $base, $add_parent ) ) {
+						
+							$json[ $base ] = ! isset( $json[ $base ] ) ? [] : $json[ $base ];
+							
+							$json[ $base ][ $key ] = ! empty( $json[ $base ][ $key ] ) && ! $nomerge ?
+								$this->parse_args_r( $read, $json[ $base ][ $key ] ) :
+								$read;
+							
+						} else {
+							
+							$json[ $key ] = ! empty( $json[ $key ] ) && ! $nomerge ?
+								$this->parse_args_r( $read, $json[ $key ] ) :
+								$read;
+						}
+						
+					} else if ( $file != "." && $file != ".." && is_dir( $path . $file ) ) {
+					
+						$json[ $file ] = $this->read_json_from_disk( [ $path . $file ] );
+					}
+				}
+				
+				closedir( $dh );
+			}
+		}
+		
+		return $json;
 	}
 	
 	/**
@@ -409,217 +610,6 @@ class CFG {
 	}
 	
 	/**
-	 * Looks for a key, and if that content is an array, implodes the array.
-	 *
-	 * @param        $array
-	 * @param string $text_key
-	 *
-	 * @return array
-	 */
-	public function txt( $array, $text_key = 'txt' ) {
-		
-		if ( ! is_array( $array ) ) {
-			return $array;
-		}
-		
-		foreach ( $array as $key => $val )  {
-			
-			if ( is_array( $val ) && $key !== $text_key ) {
-				$array[ $key ] = $this->txt( $val );
-			} else if ( $key === $text_key && is_array( $val ) ) {
-				$array[ $key ] = implode( ' ', $val );
-			}
-		}
-		
-		return $array;
-	}
-	
-	/* PROTECTED METHODS *********************************************************************************************/
-	
-	/**
-	 * Reciprocal method to allow dots-referenced values to be inserted into an array.
-	 *
-	 * $dots  = 'a.b.c'
-	 * $value = 'whatever'
-	 *
-	 * returns [
-	 *   'a' => [
-	 *     'b' => [
-	 *       'c' => 'whatever'
-	 *     ]
-	 *   ]
-	 * ]
-	 *
-	 * @since  1.0
-	 *
-	 * @param string $dots  : The "dots" key
-	 * @param mixed  $value : Value to save
-	 *
-	 * @return array
-	 */
-	protected function dots_to_array( $dots, $value ) {
-		
-		$ex = explode( '.', $dots );
-		
-		while ( ! empty( $ex ) ) {
-			$inner = array_pop( $ex );
-			$array = [ $inner => $value ];
-			$value = $array;
-		}
-		
-		return $value;
-	}
-	
-	/**
-	 * Either:
-	 * - reads JSON from disk from passed array of paths
-	 * - adds passed JSON-encoded string to passed config array
-	 *
-	 * @since  1.0
-	 *
-	 * @param array|string $cfg : Either an array of paths or a JSON encoded string
-	 * @param array        $CFG : Optional - Existing configuration array if passing a string
-	 * @param string       $key : Optional - Key to add to
-	 *
-	 * @return mixed
-	 */
-	protected function json_cfg( $cfg, $CFG = [], $key = '' ) {
-		
-		$test = is_string( $cfg ) ? json_decode( $cfg, TRUE ) : NULL;
-		
-		if ( $test === NULL ) {
-			
-			$cfg = $this->read_json_from_disk( $cfg );
-			$CFG = $this->parse_args_r( $cfg, $CFG );
-			
-		} else if ( $key && $test ) {
-			
-			$CFG[ $key ] = $test;
-			
-		} else if ( $test ) {
-			
-			$CFG = $test;
-		}
-		
-		return $CFG;
-	}
-	
-	/**
-	 * Reads JSON from disk given an array of paths. Each JSON file will be added to resulting config array
-	 * using the filename(s) minus '.json' as the root key(s).
-	 *
-	 * Paths can be individual files, or a directory. If a directory, all JSON files in that directory will be added
-	 * without recursing into sub-directories.
-	 *
-	 * $paths = [
-	 *   '../foo.json',
-	 *   '../cfg_dir'
-	 * ]
-	 *
-	 * returns (assuming valid JSON is found, and cfg_dir contained 'bar.json' and 'baz.json'):
-	 *
-	 * [
-	 *   'foo' => [...] ,
-	 *   'bar' => [...] ,
-	 *   'baz' => [...]
-	 * ]
-	 *
-	 * @since  1.0
-	 *
-	 * @param  array $paths : array of paths
-	 *
-	 * @return array
-	 */
-	protected function read_json_from_disk( $paths ) {
-		
-		$json  = [];
-		$add_parent = [];
-		$paths = ! is_array( $paths ) ? (array) $paths : $paths;
-		
-		foreach ( $paths as $path ) {
-			
-			if ( ! is_dir( $path ) && file_exists( $path ) ) {
-				
-				$read = $this->read_json_cfg( $path );
-				$json = ! empty( $json ) ? $this->parse_args_r( $read, $json ) : $read;
-				
-			} else if ( is_dir( $path ) ) {
-				
-				$dh = opendir( $path );
-				$base = basename( $path );
-				
-				while ( ( $file = readdir( $dh ) ) !== FALSE ) {
-					
-					if ( $file != "." && $file != ".." && ! is_dir( $path . $file ) ) {
-						
-						$ext = substr( strrchr( $file, "." ), 1 );
-						
-						// skip non-json files
-						if ( $ext !== 'json' ) {
-							continue;
-						}
-						
-						// key is the filename minus extension
-						$key = substr( $file, 0, ( strlen( $file ) - 5 ) );
-						
-						// keys with underscores as first character do not get merged
-						$nomerge = FALSE;
-						if ( substr( $file, 0, 1 ) == '_' ) {
-							$key     = ltrim( $key, '_' );
-							$nomerge = TRUE;
-						}
-						
-						$read = $this->read_json_cfg( $path . $file );
-						
-						if ( in_array( $base, $add_parent ) ) {
-						
-							$json[ $base ] = ! isset( $json[ $base ] ) ? [] : $json[ $base ];
-							
-							$json[ $base ][ $key ] = ! empty( $json[ $base ][ $key ] ) && ! $nomerge ?
-								$this->parse_args_r( $read, $json[ $base ][ $key ] ) :
-								$read;
-							
-						} else {
-							
-							$json[ $key ] = ! empty( $json[ $key ] ) && ! $nomerge ?
-								$this->parse_args_r( $read, $json[ $key ] ) :
-								$read;
-						}
-						
-					} else if ( $file != "." && $file != ".." && is_dir( $path . $file ) ) {
-					
-						$json[ $file ] = $this->read_json_from_disk( [ $path . $file ] );
-					}
-				}
-				
-				closedir( $dh );
-			}
-		}
-		
-		return $json;
-	}
-	
-	/**
-	 * Reads file from disk. If not valid JSON or file doesn't exist, returns empty array.
-	 *
-	 * @since  1.0
-	 *
-	 * @param string $file : full path on disk to JSON file
-	 *
-	 * @return array|mixed|object
-	 */
-	public function read_json_cfg( $file ) {
-		
-		if ( ! file_exists( $file ) ) {
-			return [];
-		}
-		
-		$json = json_decode( file_get_contents( $file ), TRUE );
-		
-		return $json === NULL ? [] : $json;
-	}
-	
-	/**
 	 * Generates the token name
 	 *
 	 * @since  1.0
@@ -631,7 +621,7 @@ class CFG {
 	 *
 	 * @return string
 	 */
-	protected function tokenize_key( $prefix, $key, $brackets = TRUE, $ignore_numeric = false ) {
+	public function tokenize_key( $prefix, $key, $brackets = TRUE, $ignore_numeric = false ) {
 		
 		$prefix = rtrim( $prefix, '.' );
 		
@@ -661,5 +651,31 @@ class CFG {
 		}
 		
 		return $brackets && $ret ? '{{' . $ret . '}}' : $ret;
+	}
+	
+	/**
+	 * Looks for a key, and if that content is an array, implodes the array.
+	 *
+	 * @param        $array
+	 * @param string $text_key
+	 *
+	 * @return array
+	 */
+	public function txt( $array, $text_key = 'txt' ) {
+		
+		if ( ! is_array( $array ) ) {
+			return $array;
+		}
+		
+		foreach ( $array as $key => $val )  {
+			
+			if ( is_array( $val ) && $key !== $text_key ) {
+				$array[ $key ] = $this->txt( $val );
+			} else if ( $key === $text_key && is_array( $val ) ) {
+				$array[ $key ] = implode( ' ', $val );
+			}
+		}
+		
+		return $array;
 	}
 }

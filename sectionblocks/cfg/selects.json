@@ -2,15 +2,40 @@
   "bClass": [
     {
       "key" :   "s1",
-      "label" : "None",
+      "label" : "No Style",
       "value" : ""
+    },
+    {
+      "key" :   "s1",
+      "label" : "Two Columns, 50/50",
+      "value" : "sectionblock-section-50-50"
+    },
+    {
+      "key" :   "s1",
+      "label" : "Three Columns, 33/33/33",
+      "value" : "sectionblock-section-33-33-33"
     }
   ],
   "iClass": [
     {
       "key" :   "i1",
-      "label" : "None",
+      "label" : "No Style",
       "value" : ""
+    },
+    {
+      "key" :   "i1",
+      "label" : "Top Image",
+      "value" : "sectionblock-feature-top-image"
+    },
+    {
+      "key" :   "i1",
+      "label" : "Big Image",
+      "value" : "sectionblock-feature-big-image"
+    },
+    {
+      "key" :   "i1",
+      "label" : "Floated Image",
+      "value" : "sectionblock-feature-float-image"
     }
   ]
 }

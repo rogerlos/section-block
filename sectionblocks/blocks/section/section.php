@@ -103,7 +103,7 @@ function item_classes( $S, $S_, $atts ) {
 	$ICLS = [ $S . '-items' ];
 	
 	if ( ! empty( $atts['alignment'] ) ) {
-		$ICLS[] = 'align' . $atts['alignment'];
+		$ICLS[] = 'align-items-' . $atts['alignment'];
 	}
 	
 	// allow classes to be filtered
@@ -125,13 +125,16 @@ function item_classes( $S, $S_, $atts ) {
  */
 function background_props( $S_, $atts, $content, $USE ) {
 	
+	if ( empty( $atts['background'] ) ) {
+		return [];
+	}
+	
 	$BG  = apply_filters( $S_ . '_background_raw', $atts['background'], $atts, $content );
 	
 	foreach ( $USE['background'] as $prop => $use ) {
 		
 		if ( $prop === 'colorinline' && $use && ! empty( $BG['color'] ) && $USE['background']['color'] ) {
 			$BG['colorinline'] = $BG['color'];
-			$BG['color']       = NULL;
 		} else if ( ! $use ) {
 			$BG[ $prop ] = NULL;
 		}

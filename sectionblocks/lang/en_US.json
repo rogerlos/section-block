@@ -7,69 +7,40 @@
   "blocks": {
     "section": {
 
+    },
+    "feature":{
+
     }
   },
   "components": {
     "bg": {
       "attachment": {
-        "title": [
-          "Attachment"
-        ],
-        "label": [
-          "When Scrolling Page..."
-        ],
-        "help": [
-          "Whether image moves or not with page scroll. Default is 'Scroll'"
-        ]
+        "title": "Attachment",
+        "label": "When Scrolling Page...",
+        "help": "Whether image moves or not with page scroll. Default is 'Scroll'"
       },
       "blend": {
-        "title": [
-          "Blend"
-        ],
-        "label": [
-          "Mix Color and Image"
-        ],
-        "help": [
-          "If a color and an image are both selected, you can add a filter to blend them."
-        ]
+        "title": "Blend",
+        "label": "Mix Color and Image",
+        "help": "If a color and an image are both selected, you can add a filter to blend them."
       },
       "color": {
-        "title": [
-          "Background Color"
-        ],
-        "label": [
-          "Select a Color"
-        ]
+        "title":  "Background Color",
+        "label": "Select a Color"
       },
       "ghost": {
-        "title": [
-          "Ornaments"
-        ],
-        "imagetitle": [
-          "Image"
-        ],
-        "imagehelp": [
-          "You can add an ornament to the background."
-        ],
-        "positiontitle": [
-          "Position"
-        ],
-        "positionhelp": [
-          "Choose where the ornament appears, always at the bottom of the container."
-        ]
+        "title": "Ornaments",
+        "imagetitle": "Image",
+        "imagehelp": "You can add an ornament to the background.",
+        "positiontitle": "Position",
+        "positionhelp": "Choose where the ornament appears, always at the bottom of the container."
       },
       "inspector": {
-        "imagetitle": [
-          "Background Image"
-        ]
+        "imagetitle": "Background Image"
       },
       "overlay": {
-        "title": [
-          "Overlay Color"
-        ],
-        "label": [
-          "Select a color"
-        ],
+        "title": "Overlay Color",
+        "label": "Select a color",
         "help": [
           "An overlay is laid on top of the background rather than being mixed with it, but will ",
           "still be affected by the blend mode. The result can be use to decrease contrast or provide a ",

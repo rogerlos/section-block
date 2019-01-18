@@ -29,6 +29,8 @@
       width: 100%;
       min-width: 100%;
       max-width: 100%; }
+
+/* Kill recursive floats *********************************************************************************************/
 .edit-post-visual-editor .sectionblock-section-items .editor-block-list__block-edit {
   float: none !important; }
 

@@ -45,10 +45,10 @@
 
 ( function ( SBLCK ) {
 
-    const EL                                                                              = wp.element.createElement;
-    const { PanelBody, PanelRow, RadioControl, RangeControl, SelectControl, TextControl } = wp.components;
-    const { PanelColorSettings }                                                          = wp.editor;
-    const { Fragment }                                                                    = wp.element;
+    const EL                                                                                   = wp.element.createElement;
+    const { PanelBody, RadioControl, RangeControl, SelectControl, TextControl, ToggleControl } = wp.components;
+    const { PanelColorSettings }                                                               = wp.editor;
+    const { Fragment }                                                                         = wp.element;
 
     const USE = SBLCK.CFG.use;
     const PFX = 'sectionblock-';
@@ -57,7 +57,10 @@
 
     let PROPS = {
         attachment : 'scroll',
-        blend      : '',
+        blend      : {
+            type       : '',
+            desaturate : 0
+        },
         color      : {
             hex   : '',
             alpha : 100
@@ -99,10 +102,9 @@
     SBLCK.BG.Attachment = function ( key, change, val ) {
 
         return EL(
-            PanelRow,
+            Fragment,
             {
-                key       : PFX + 'attachment-row',
-                className : PFX + 'attachment-row ' + PFX + 'inspector-row',
+                key : PFX + 'attachment-row',
             },
             EL(
                 'p',
@@ -131,11 +133,17 @@
 
     SBLCK.BG.Blend = function ( key, change, val ) {
 
+        if ( ! val.hasOwnProperty( 'type' ) ) {
+            val = {
+                type       : val,
+                desaturate : 0
+            }
+        }
+
         return EL(
-            PanelRow,
+            Fragment,
             {
-                key       : 'bgblnd',
-                className : PFX + "blend-row " + PFX + 'inspector-row',
+                key : 'bgblnd',
             },
             EL(
                 'p',
@@ -152,10 +160,24 @@
                     label     : "Mix Color and Image",
                     className : PFX + 'blend ' + PFX + 'inspector-select',
                     help      : "If a color and an image are both selected, you can add a filter to blend them.",
-                    value     : val,
+                    value     : val.type,
                     options   : VARS.blends,
-                    onChange  : val => {
-                        change( key, val );
+                    onChange  : value => {
+                        change( 'type', value, key );
+                    }
+                }
+            ),
+            EL(
+                ToggleControl,
+                {
+                    className : PFX + 'blend-desaturate ' + PFX + 'inspector-toggle',
+                    key       : "background-blend-desaturate",
+                    label     : 'Desaturate Image',
+                    help      : 'Make the image black-and-white',
+                    checked   : val.desaturate,
+                    onChange  : checked => {
+                        let value = checked ? 100 : 0;
+                        change( 'desaturate', value, key );
                     }
                 }
             )
@@ -164,19 +186,24 @@
 
     SBLCK.BG.Classes = function ( bg ) {
         let typ = SBLCK.BG.Type( bg );
-        let ret;
+        let ret = typ ? 'has-bg ' : '';
         let col = bg.color;
-        ret     = 'blend' === typ ? ' has-bg has-bg-image has-bg-color has-bg-blend ' : '';
-        ret     = ! ret && 'image' === typ ? ' has-bg has-bg-image ' : ret;
-        ret     = ! ret && 'color' === typ ? ' has-bg has-bg-color ' : ret;
-        if ( ret && ret !== 'image' ) {
+        ret += 'blend' === typ ? 'has-bg-image has-bg-blend  has-bg-color' : '';
+        ret += 'image' === typ ? 'has-bg-image' : '';
+        ret += 'color' === typ ? 'has-bg-color' : '';
+        if ( col ) {
+            let c = '';
             VARS.colors.forEach( function ( e ) {
-                if ( col === e.color ) {
-                    ret += ' has-' + e.slug + '-background-color ';
+                if ( col.hex === e.color ) {
+                    c = '-' + e.slug;
                 }
             } );
+            if ( ! c ) {
+                c = '-' + col.hex.replace( '#', '' );
+            }
+            ret += c;
         }
-        return ret;
+        return ret + ' ';
     };
 
     SBLCK.BG.Color = function ( key, change, val ) {
@@ -191,8 +218,9 @@
                     {
                         label    : 'Select a Color',
                         value    : val.hex,
-                        onChange : val => {
-                            change( 'hex', val, key )
+                        onChange : value => {
+                            value = typeof ( value ) === 'undefined' ? '' : value;
+                            change( 'hex', value, key )
                         }
                     }
                 ]
@@ -221,10 +249,9 @@
 
     SBLCK.BG.Ghost = function ( key, change, val ) {
         return EL(
-            PanelRow,
+            Fragment,
             {
-                key       : 'ghost-row',
-                className : PFX + 'ghost-row ' + PFX + 'inspector-row',
+                key : 'ghost-row',
             },
             EL(
                 'p',
@@ -289,16 +316,30 @@
     };
 
     SBLCK.BG.InlineStyle = function ( type, bg ) {
-        let use  = USE[ type ].background;
-        let size = SBLCK.BG.SizeCalc( bg.size );
-        size     = ! size && bg.size.keyword ? bg.size.keyword : size;
-        let over = '';
-        if ( bg.overlay.type ) {
+
+        let use   = USE[ type ].background;
+        let size  = SBLCK.BG.SizeCalc( bg.size );
+        let over  = '';
+        let blend = '';
+
+        size = ! size && bg.size.keyword ? bg.size.keyword : size;
+
+        bg.blend   = typeof ( bg.blend ) === 'undefined' ? PROPS.blend : bg.blend;
+        bg.overlay = typeof ( bg.overlay ) === 'undefined' ? PROPS.overlay : bg.overlay;
+
+        if ( ! bg.blend.hasOwnProperty( 'type' ) ) {
+            bg.blend = {
+                type       : bg.blend,
+                desaturate : 0
+            }
+        }
+
+        if ( bg.overlay.type && bg.overlay.color ) {
             let alpha  = ! bg.overlay.alpha ? 0 : parseInt( bg.overlay.alpha );
             let beta   = ! bg.overlay.beta ? 0 : parseInt( bg.overlay.beta );
             let type   = bg.overlay.type;
             let start  = ! bg.overlay.start ? 'top' : bg.overlay.start;
-            let color  = ! bg.overlay.color ? '#000000' : bg.overlay.color;
+            let color  = bg.overlay.color;
             alpha      = alpha < 0 ? 0 : alpha;
             alpha      = alpha > 100 ? 100 : alpha;
             beta       = beta < 0 ? 0 : beta;
@@ -320,36 +361,56 @@
             switch ( type ) {
                 case 'cover':
                 case 'gradient':
-                    over = 'linear-gradient(' + deg + ',' + color1 + ',' + color2 + '),';
+                    over  = 'linear-gradient(' + deg + ',' + color1 + ',' + color2 + ')';
+                    blend = 'normal';
                     break;
                 case 'edges':
-                    over = 'linear-gradient(0deg,' + color1 + ',' + color2 + ' 20%,' + color2 + '),';
+                    over  = 'linear-gradient(0deg,' + color1 + ',' + color2 + ' 20%,' + color2 + '),';
                     over += 'linear-gradient(90deg,' + color1 + ',' + color2 + ' 20%,' + color2 + '),';
                     over += 'linear-gradient(180deg,' + color1 + ',' + color2 + ' 20%,' + color2 + '),';
-                    over += 'linear-gradient(270deg,' + color1 + ',' + color2 + ' 20%,' + color2 + '),';
+                    over += 'linear-gradient(270deg,' + color1 + ',' + color2 + ' 20%,' + color2 + ')';
+                    blend = 'normal,normal,normal,normal';
                     break;
             }
         }
 
         let c = bg.color.hex ? SBLCK.BG.ToRgba( bg.color.hex, bg.color.alpha ) : null;
 
+        if ( c && use.color && use.colorinline && use.image && bg.image.url && use.blend && bg.blend.type ) {
+            over += ( over ? ',' : '' ) + 'linear-gradient(' + c + ',' + c + ')';
+            blend += bg.blend.type ? ( blend ? ',' : '' ) + bg.blend.type : ( blend ? ',' : '' ) + 'normal';
+        }
+
+        if ( bg.blend.desaturate && use.image && bg.image.url ) {
+            let de = parseInt( bg.blend.desaturate );
+            over += ( over ? ',' : '' ) + 'linear-gradient(rgba(0,0,0,' + de + '),rgba(0,0,0,' + de + '))';
+            blend += ( blend ? ',' : '' ) + 'color'
+        }
+
+        if ( use.image && bg.image.url ) {
+            over += ( over ? ',' : '' ) + 'url(' + bg.image.url + ')';
+            blend += ( blend ? ',' : '' ) + 'normal';
+        }
+
         return {
-            backgroundImage      : use.image && bg.image.url ? over + 'url(' + bg.image.url + ')' : null,
+            backgroundImage      : over ? over : null,
             backgroundSize       : use.size && bg.image.url && size ? size : null,
             backgroundRepeat     : use.repeat && bg.image.url && bg.repeat ? bg.repeat : null,
             backgroundAttachment : use.attachment && bg.image.url && bg.attachment ? bg.attachment : null,
             backgroundPosition   : use.position && bg.image.url && bg.position ? bg.position.x + ' ' + bg.position.y : null,
-            backgroundBlendMode  : use.blend && bg.image.url && bg.blend ? bg.blend : null,
-            backgroundColor      : use.color && use.colorinline && c ? c : null,
+            backgroundBlendMode  : use.blend && bg.image.url && blend ? blend : null,
+            backgroundColor      : c && use.color && use.colorinline ? c : null
         };
     };
 
     SBLCK.BG.Inspector = function ( key, change, bg, I ) {
 
-        let has            = bg.image.id > 0;
+        let has = bg.image.id > 0;
+        let use = key === 'itemBackground' ? USE.item.background : USE.section.background;
+
         bg.uploader.key    = key;
         bg.uploader.change = change;
-        let use            = key === 'itemBackground' ? USE.item.background : USE.section.background;
+
         return (
             EL(
                 Fragment,
@@ -372,13 +433,19 @@
                     use.size && has ? SBLCK.BG.Size( 'size', change, bg.size ) : null,
                     use.blend && has ? SBLCK.BG.Blend( 'blend', change, bg.blend ) : null,
                     use.repeat && has ? SBLCK.BG.Repeat( 'repeat', change, bg.repeat ) : null,
-                    use.overlay && has ? SBLCK.BG.Overlay( 'overlay', change, bg.overlay, bg ) : null,
+                    use.overlay && has ? SBLCK.BG.Overlay( 'overlay', change, bg.overlay ) : null,
                 )
             )
         )
     };
 
-    SBLCK.BG.Overlay = function ( key, change, val, bg ) {
+    SBLCK.BG.Overlay = function ( key, change, val ) {
+
+        let obj = ! val.hasOwnProperty( 'color' ) ? PROPS.overlay : null;
+        if ( obj ) {
+            obj.color = val;
+            val       = obj;
+        }
 
         return EL(
             PanelColorSettings,
@@ -393,25 +460,13 @@
                 colorSettings : [
                     {
                         label    : 'Select a color',
-                        value    : val,
-                        onChange : val => {
-                            change( key, val )
+                        value    : val.color,
+                        onChange : value => {
+                            value = typeof ( value ) === 'undefined' ? '' : value;
+                            change( 'color', value, key )
                         }
                     }
                 ]
-            },
-            SBLCK.BG.OverlayOther( bg, change )
-        )
-    };
-
-    SBLCK.BG.OverlayOther = function ( bg, change ) {
-
-        if ( ! bg.image.id ) return;
-        return EL(
-            PanelRow,
-            {
-                key       : 'overlay-other-row',
-                className : PFX + 'overlay-other-row ' + PFX + 'inspector-row',
             },
             EL(
                 'p',
@@ -429,10 +484,10 @@
                     label     : "Type",
                     help      : "Cover adds the chosen color over the entire image. Gradients apply the color at the "
                         + "chosen side and fade to transparent. Edges bring the gradient in from the edges to trasparent in the center.",
-                    value     : bg.overlay.type,
+                    value     : val.type,
                     options   : VARS.overlay,
-                    onChange  : val => {
-                        change( 'type', val, 'overlay' )
+                    onChange  : value => {
+                        change( 'type', value, key )
                     }
                 }
             ),
@@ -441,13 +496,13 @@
                 {
                     key       : 'backgroundoverlaytc1',
                     label     : "Starting Transparency",
-                    className : PFX + 'overlay-alpha-start ' + PFX + 'inspector-range',
+                    className : PFX + 'overlay-alpha ' + PFX + 'inspector-range',
                     help      : "Number from 0 to 100, as a percentage of how transparent the overlay will be.",
-                    value     : bg.overlay.alpha,
+                    value     : val.alpha,
                     min       : 0,
                     max       : 100,
-                    onChange  : val => {
-                        change( 'alpha', val, 'overlay' )
+                    onChange  : value => {
+                        change( 'alpha', value, key )
                     }
                 }
             ),
@@ -456,13 +511,13 @@
                 {
                     key       : 'backgroundoverlaytc55',
                     label     : "Ending Transparency",
-                    className : PFX + 'overlay-alpha-beta ' + PFX + 'inspector-range',
+                    className : PFX + 'overlay-alpha ' + PFX + 'inspector-range',
                     help      : "Gradient and Edge use this second value to set the end transparency of the gradient",
-                    value     : bg.overlay.beta,
+                    value     : val.beta,
                     min       : 0,
                     max       : 100,
-                    onChange  : val => {
-                        change( 'beta', val, 'overlay' )
+                    onChange  : value => {
+                        change( 'beta', value, key )
                     }
                 }
             ),
@@ -473,10 +528,10 @@
                     className : PFX + 'overlay-start ' + PFX + 'inspector-radio',
                     label     : "Start Position",
                     help      : "Used for gradients, dictates the gradient start position",
-                    selected  : bg.overlay.start,
+                    selected  : val.start,
                     options   : VARS.start,
-                    onChange  : val => {
-                        change( 'start', val, 'overlay' )
+                    onChange  : value => {
+                        change( 'start', value, key )
                     }
                 }
             )
@@ -486,10 +541,9 @@
     SBLCK.BG.Position = function ( key, change, val ) {
         return (
             EL(
-                PanelRow,
+                Fragment,
                 {
-                    key       : 'overlay-position-row',
-                    className : PFX + 'overlay-position-row ' + PFX + 'inspector-row',
+                    key : 'overlay-position-row',
                 },
                 EL(
                     'p',
@@ -532,10 +586,9 @@
     SBLCK.BG.Repeat = function ( key, change, val ) {
 
         EL(
-            PanelRow,
+            Fragment,
             {
-                key       : 'overlay-repeat-row',
-                className : PFX + 'overlay-repeat-row ' + PFX + 'inspector-row',
+                key : 'overlay-repeat-row',
             },
             EL(
                 'p',
@@ -564,10 +617,9 @@
 
     SBLCK.BG.Size = function ( key, change, val ) {
         return EL(
-            PanelRow,
+            Fragment,
             {
-                key       : 'size-row',
-                className : PFX + 'size-row ' + PFX + 'inspector-row',
+                key : 'size-row',
             },
             EL(
                 'p',

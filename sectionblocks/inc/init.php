@@ -163,6 +163,23 @@ function includes_add( $array ) {
 	}
 }
 
+function lang( $paths ) {
+	
+	global $SBLCK;
+	
+	if ( empty( $paths ) ) {
+		return;
+	}
+	
+	foreach( $paths as $path ) {
+	
+	
+	
+	}
+	
+	
+}
+
 /**
  * Registers scripts. $cfg is an array as below, can also be empty.
  *

@@ -18,7 +18,7 @@
 .sectionblock-section.alignfull {
   margin-left: calc(calc(100% - 100vw) / 2);
   margin-right: calc(calc(100% - 100vw) / 2); }
-.sectionblock-section .sectionblock-flex .sectionblock-section-items {
+.sectionblock-section.sectionblock-flex .sectionblock-section-items {
   display: flex;
   flex-direction: column;
   flex-wrap: wrap; }
