@@ -3,7 +3,7 @@
 namespace sectionblock\util;
 
 /**
- * Converts hex to rgba
+ * Converts hex to rgba when sent with an alpha value
  *
  * @param      $color
  * @param      $opacity

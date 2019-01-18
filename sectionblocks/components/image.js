@@ -4,6 +4,14 @@
     const { IconButton, PanelRow } = wp.components;
     const { MediaUpload }          = wp.editor;
 
+    /**
+     * Returns image controls to the inspector. If an image is present, displays with "remove" control.
+     *
+     * @param img    - image array
+     * @param key    - key block is saving under
+     * @param change - onChange handler
+     * @returns {*|*|ActiveX.IXMLDOMElement|any|HTMLElement}
+     */
     SBLCK.Image = function ( img, key, change ) {
 
         img = typeof ( img ) === 'undefined' ? { id : 0 } : img;

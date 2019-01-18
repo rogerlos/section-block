@@ -45,14 +45,13 @@
 
 ( function ( SBLCK ) {
 
-    const EL                                                                                   = wp.element.createElement;
     const { PanelBody, RadioControl, RangeControl, SelectControl, TextControl, ToggleControl } = wp.components;
     const { PanelColorSettings }                                                               = wp.editor;
     const { Fragment }                                                                         = wp.element;
 
-    const USE = SBLCK.CFG.use;
-    const PFX = 'sectionblock-';
-
+    const EL   = wp.element.createElement;
+    const USE  = SBLCK.CFG.use;
+    const PFX  = 'sectionblock-';
     const VARS = SBLCK.CFG.background;
 
     let PROPS = {
@@ -99,6 +98,14 @@
 
     SBLCK.BG = {};
 
+    /**
+     * Attachment controls for the inspector
+     *
+     * @param key    - the PROPS root key
+     * @param change - onChange from calling block
+     * @param val    - last set value of root key
+     * @returns {*|*|ActiveX.IXMLDOMElement|any|HTMLElement}
+     */
     SBLCK.BG.Attachment = function ( key, change, val ) {
 
         return EL(
@@ -131,6 +138,14 @@
         )
     };
 
+    /**
+     * Blend controls for the inspector.
+     *
+     * @param key    - the PROPS root key
+     * @param change - onChange from calling block
+     * @param val    - last set value of root key
+     * @returns {*|*|ActiveX.IXMLDOMElement|any|HTMLElement}
+     */
     SBLCK.BG.Blend = function ( key, change, val ) {
 
         if ( ! val.hasOwnProperty( 'type' ) ) {
@@ -184,11 +199,17 @@
         )
     };
 
+    /**
+     * Adds some basic classes to the block.
+     *
+     * @param bg - current PROPS object
+     * @returns {string}
+     */
     SBLCK.BG.Classes = function ( bg ) {
         let typ = SBLCK.BG.Type( bg );
         let ret = typ ? 'has-bg ' : '';
         let col = bg.color;
-        ret += 'blend' === typ ? 'has-bg-image has-bg-blend  has-bg-color' : '';
+        ret += 'blend' === typ ? 'has-bg-image has-bg-blend has-bg-color' : '';
         ret += 'image' === typ ? 'has-bg-image' : '';
         ret += 'color' === typ ? 'has-bg-color' : '';
         if ( col ) {
@@ -206,6 +227,14 @@
         return ret + ' ';
     };
 
+    /**
+     * Color controls for the inspector
+     *
+     * @param key    - the PROPS root key
+     * @param change - onChange from calling block
+     * @param val    - last set value of root key
+     * @returns {*|*|ActiveX.IXMLDOMElement|any|HTMLElement}
+     */
     SBLCK.BG.Color = function ( key, change, val ) {
         return EL(
             PanelColorSettings,
@@ -243,10 +272,23 @@
         )
     };
 
+    /**
+     * Returns an empty PROPS object
+     *
+     * @returns {object}
+     */
     SBLCK.BG.GetProps = function () {
         return PROPS;
     };
 
+    /**
+     * Ghosts are ornaments which can be added, like a logo positioned in one corner of the block.
+     *
+     * @param key
+     * @param change
+     * @param val
+     * @returns {*|*|ActiveX.IXMLDOMElement|any|HTMLElement}
+     */
     SBLCK.BG.Ghost = function ( key, change, val ) {
         return EL(
             Fragment,
@@ -292,6 +334,12 @@
         )
     };
 
+    /**
+     * Returns the display code if a ghost is being used
+     *
+     * @param bg - current PROPS object
+     * @returns {*}
+     */
     SBLCK.BG.GhostDisplay = function ( bg ) {
         let where = typeof ( bg.ghost.pos ) === 'undefined' ? 'right' : bg.ghost.pos;
         if ( ! bg.ghost.img ) {
@@ -311,10 +359,25 @@
         )
     };
 
+    /**
+     * Pass-through to image component.
+     *
+     * @param key    - the PROPS root key
+     * @param change - onChange from calling block
+     * @param val    - last set value of root key
+     * @returns {*}
+     */
     SBLCK.BG.Image = function ( key, val, change ) {
         return SBLCK.Image( val, key, change )
     };
 
+    /**
+     * Creates inline styles object.
+     *
+     * @param type - the type of background
+     * @param bg   - current PROPS object
+     * @returns {object}
+     */
     SBLCK.BG.InlineStyle = function ( type, bg ) {
 
         let use   = USE[ type ].background;
@@ -335,18 +398,24 @@
         }
 
         if ( bg.overlay.type && bg.overlay.color ) {
-            let alpha  = ! bg.overlay.alpha ? 0 : parseInt( bg.overlay.alpha );
-            let beta   = ! bg.overlay.beta ? 0 : parseInt( bg.overlay.beta );
-            let type   = bg.overlay.type;
-            let start  = ! bg.overlay.start ? 'top' : bg.overlay.start;
+
+            let alpha = ! bg.overlay.alpha ? 0 : parseInt( bg.overlay.alpha );
+            let beta  = ! bg.overlay.beta ? 0 : parseInt( bg.overlay.beta );
+
+            alpha = alpha < 0 ? 0 : alpha;
+            alpha = alpha > 100 ? 100 : alpha;
+            beta  = beta < 0 ? 0 : beta;
+            beta  = beta > 100 ? 100 : beta;
+
+            let type  = bg.overlay.type;
+            let start = ! bg.overlay.start ? 'top' : bg.overlay.start;
+
             let color  = bg.overlay.color;
-            alpha      = alpha < 0 ? 0 : alpha;
-            alpha      = alpha > 100 ? 100 : alpha;
-            beta       = beta < 0 ? 0 : beta;
-            beta       = beta > 100 ? 100 : beta;
             let color1 = SBLCK.BG.ToRgba( color, alpha );
             let color2 = type === 'cover' ? color1 : SBLCK.BG.ToRgba( color, beta );
-            let deg    = '180deg';
+
+            let deg = '180deg';
+
             switch ( start ) {
                 case 'bottom':
                     deg = '0deg';
@@ -358,6 +427,7 @@
                     deg = '270deg';
                     break;
             }
+
             switch ( type ) {
                 case 'cover':
                 case 'gradient':
@@ -403,7 +473,15 @@
         };
     };
 
-    SBLCK.BG.Inspector = function ( key, change, bg, I ) {
+    /**
+     * This adds the entire assembly to the inspector,
+     *
+     * @param key    - key being used by block to save background
+     * @param change - onChange from calling block
+     * @param bg     - current PROPS object from block
+     * @returns {*|*|ActiveX.IXMLDOMElement|any|HTMLElement}
+     */
+    SBLCK.BG.Inspector = function ( key, change, bg ) {
 
         let has = bg.image.id > 0;
         let use = key === 'itemBackground' ? USE.item.background : USE.section.background;
@@ -429,7 +507,7 @@
                     },
                     use.image ? SBLCK.BG.Image( 'image', bg.image, change ) : null,
                     use.attachment && has ? SBLCK.BG.Attachment( 'attachment', change, bg.attachment ) : null,
-                    use.position && has ? SBLCK.BG.Position( 'position', change, bg.position, I ) : null,
+                    use.position && has ? SBLCK.BG.Position( 'position', change, bg.position ) : null,
                     use.size && has ? SBLCK.BG.Size( 'size', change, bg.size ) : null,
                     use.blend && has ? SBLCK.BG.Blend( 'blend', change, bg.blend ) : null,
                     use.repeat && has ? SBLCK.BG.Repeat( 'repeat', change, bg.repeat ) : null,
@@ -439,6 +517,14 @@
         )
     };
 
+    /**
+     * Returns overlay fields
+     *
+     * @param key    - the PROPS root key
+     * @param change - onChange from calling block
+     * @param val    - last set value of root key
+     * @returns {*|*|ActiveX.IXMLDOMElement|any|HTMLElement}
+     */
     SBLCK.BG.Overlay = function ( key, change, val ) {
 
         let obj = ! val.hasOwnProperty( 'color' ) ? PROPS.overlay : null;
@@ -483,7 +569,8 @@
                     className : PFX + 'overlay-type ' + PFX + 'inspector-select',
                     label     : "Type",
                     help      : "Cover adds the chosen color over the entire image. Gradients apply the color at the "
-                        + "chosen side and fade to transparent. Edges bring the gradient in from the edges to trasparent in the center.",
+                        + "chosen side and fade to transparent. Edges bring the gradient in from the edges to "
+                        + "transparent in the center.",
                     value     : val.type,
                     options   : VARS.overlay,
                     onChange  : value => {
@@ -538,6 +625,14 @@
         )
     };
 
+    /**
+     * Returns position fields in inspector
+     *
+     * @param key    - the PROPS root key
+     * @param change - onChange from calling block
+     * @param val    - last set value of root key
+     * @returns {*|*|ActiveX.IXMLDOMElement|any|HTMLElement}
+     */
     SBLCK.BG.Position = function ( key, change, val ) {
         return (
             EL(
@@ -583,9 +678,16 @@
         )
     };
 
+    /**
+     * Repeat fields in inspector.
+     *
+     * @param key    - the PROPS root key
+     * @param change - onChange from calling block
+     * @param val    - last set value of root key
+     * @returns {*|*|ActiveX.IXMLDOMElement|any|HTMLElement}
+     */
     SBLCK.BG.Repeat = function ( key, change, val ) {
-
-        EL(
+        return EL(
             Fragment,
             {
                 key : 'overlay-repeat-row',
@@ -615,6 +717,14 @@
         )
     };
 
+    /**
+     * Adds size fields to inspector
+     *
+     * @param key    - the PROPS root key
+     * @param change - onChange from calling block
+     * @param val    - last set value of root key
+     * @returns {*|*|ActiveX.IXMLDOMElement|any|HTMLElement}
+     */
     SBLCK.BG.Size = function ( key, change, val ) {
         return EL(
             Fragment,
@@ -674,6 +784,12 @@
         )
     };
 
+    /**
+     *
+     *
+     * @param size
+     * @returns {string}
+     */
     SBLCK.BG.SizeCalc = function ( size ) {
         let ret = '';
         ret     = size.x && size.y ? size.x + ' ' + size.y : ret;
@@ -681,20 +797,33 @@
         return ret;
     };
 
+    /**
+     * Convert hex colors to RGBA by passing an opacity value
+     *
+     * @param {string}        color   - hex color
+     * @param {number|string} opacity - integer between 0 and 100
+     * @param {boolean}       [css]   - whether to return string 'rgba(r,g,b,a)' or array [r,g,b,a]
+     * @returns {*}
+     */
     SBLCK.BG.ToRgba = function ( color, opacity, css ) {
+
+        /** @type {array} */
         let rgb = color.match( /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i );
+
         rgb     = ! rgb ?
-            color.match( /^#([0-9a-f])([0-9a-f])([0-9a-f])$/i )
-                .slice( 1, 4 ).map( function ( x ) {
+            color.match( /^#([0-9a-f])([0-9a-f])([0-9a-f])$/i ).slice( 1, 4 ).map( function ( x ) {
                 return 0x11 * parseInt( x, 16 );
             } ) :
             rgb.slice( 1, 4 ).map( function ( x ) {
                 return parseInt( x, 16 );
             } );
+
         opacity = typeof ( opacity ) === 'undefined' ? 1 : parseFloat( opacity );
         opacity = opacity > 100 ? 1 : opacity;
         opacity = opacity > 1 ? opacity / 100 : opacity;
+
         rgb.push( opacity );
+
         if ( typeof ( css ) === 'undefined' || css ) {
             return 'rgba( ' + rgb.join() + ')';
         } else {
@@ -702,8 +831,16 @@
         }
     };
 
+    /**
+     * Returns the type of background this is; null, color, image, or blend
+     *
+     * @param {object} bg - PROPS
+     * @returns {*}
+     */
     SBLCK.BG.Type = function ( bg ) {
+
         let type = null;
+
         if ( bg.color && bg.image.url && bg.blend ) {
             type = 'blend';
         } else if ( bg.image.url ) {
@@ -713,6 +850,5 @@
         }
         return type;
     };
-
 
 }( window.SBLCK = window.SBLCK || {} ) );

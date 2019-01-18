@@ -171,13 +171,6 @@ function lang( $paths ) {
 		return;
 	}
 	
-	foreach( $paths as $path ) {
-	
-	
-	
-	}
-	
-	
 }
 
 /**

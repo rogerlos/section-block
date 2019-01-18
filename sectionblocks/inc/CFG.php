@@ -151,7 +151,7 @@ class CFG {
 	 *
 	 * @return mixed
 	 */
-	public function get( $dots = '', $txt = 'txt' ) {
+	public function get( $dots = '', $txt = '' ) {
 		
 		$ret = empty( $dots ) ? $this->CFG : $this->dots( $dots, $this->CFG );
 		
@@ -306,7 +306,8 @@ class CFG {
 	 *   'baz' => [...]
 	 * ]
 	 *
-	 * @todo: I do not think underscore files are actually protected in this iteration.
+	 * Files with underscores overwrite any previously saved JSON; hence important files should be loaded in
+	 * the LAST config array
 	 *
 	 * @since  1.0
 	 *
@@ -452,8 +453,6 @@ class CFG {
 	 *   ]
 	 *
 	 * Key replacement only happens when the value of the token is a string or number.
-	 *
-	 * You can pass the name of a WordPress filter to apply to the tokens array with the optional 4th param.
 	 *
 	 * @since  1.0
 	 *
@@ -656,22 +655,24 @@ class CFG {
 	/**
 	 * Looks for a key, and if that content is an array, implodes the array.
 	 *
-	 * @param        $array
-	 * @param string $text_key
+	 * @param array|string   $array
+	 * @param string|boolean $text_key - If false, all numerical-keyed arrays will be impoded. Set to string to
+	 *                                   only implode arrays with that key
 	 *
 	 * @return array
 	 */
-	public function txt( $array, $text_key = 'txt' ) {
+	public function txt( $array, $text_key = '' ) {
 		
 		if ( ! is_array( $array ) ) {
 			return $array;
 		}
 		
 		foreach ( $array as $key => $val )  {
-			
-			if ( is_array( $val ) && $key !== $text_key ) {
-				$array[ $key ] = $this->txt( $val );
+			if ( is_array( $val ) && $this->has_string_keys( $val ) && $key !== $text_key ) {
+				$array[ $key ] = $this->txt( $val, $text_key );
 			} else if ( $key === $text_key && is_array( $val ) ) {
+				$array[ $key ] = implode( ' ', $val );
+			} else if ( $text_key === false && is_array( $val ) && ! $this->has_string_keys( $val ) ) {
 				$array[ $key ] = implode( ' ', $val );
 			}
 		}
