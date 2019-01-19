@@ -1,5 +1,10 @@
-# Section Blocks
-Adds blocks which allow creation of sections.
+# Sectionblock
+Two blocks for WordPress:
+
+* Section allows the creation of sections to hold other content
+^ Feature allows creation of a widget-like block to highlight site content
+
+This is a work in progress and is rapidly changing!
 
 ## JSON Config
 Themes can place a `sectionblock` directory in root of their theme. Any JSON files within it will 
