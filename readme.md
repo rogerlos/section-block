@@ -2,7 +2,7 @@
 Two blocks for WordPress:
 
 * Section allows the creation of sections to hold other content
-^ Feature allows creation of a widget-like block to highlight site content
+* Feature allows creation of a widget-like block to highlight site content
 
 This is a work in progress and is rapidly changing!
 
