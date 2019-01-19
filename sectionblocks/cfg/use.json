@@ -14,7 +14,7 @@
       "repeat" :      true
     },
     "css" :        true,
-    "bFlex" :      true,
+    "bFlex" :      false,
     "use" :        true
   },
   "item" :      {

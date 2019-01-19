@@ -54,48 +54,6 @@
     const PFX  = 'sectionblock-';
     const VARS = SBLCK.CFG.background;
 
-    let PROPS = {
-        attachment : 'scroll',
-        blend      : {
-            type       : '',
-            desaturate : 0
-        },
-        color      : {
-            hex   : '',
-            alpha : 100
-        },
-        ghost      : {
-            img : '',
-            pos : 'right'
-        },
-        image      : {
-            src : '',
-            alt : '',
-            id  : 0
-        },
-        overlay    : {
-            alpha : 100,
-            beta  : 0,
-            color : '',
-            start : '',
-            type  : ''
-        },
-        position   : {
-            x : 0,
-            y : 0
-        },
-        repeat     : 'no-repeat',
-        size       : {
-            keyword : 'cover',
-            x       : 0,
-            y       : 0
-        },
-        uploader   : {
-            key    : '',
-            change : null
-        }
-    };
-
     SBLCK.BG = {};
 
     /**
@@ -278,7 +236,7 @@
      * @returns {object}
      */
     SBLCK.BG.GetProps = function () {
-        return PROPS;
+        return SBLCK.CFG.background.props;
     };
 
     /**

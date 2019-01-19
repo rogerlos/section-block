@@ -1,11 +1,3 @@
-/* Allowing some space to click on section ***************************************************************************/
-
-.edit-post-visual-editor {
-  .sectionblock-section {
-    border: 2px dotted #ccc;
-  }
-}
-
 /* Section widths ****************************************************************************************************/
 
 .edit-post-visual-editor .editor-block-list__block {
@@ -38,33 +30,6 @@
         .sectionblock-section {
           max-width: 100%;
           margin-right: 0;
-        }
-      }
-    }
-  }
-}
-
-/* Adjust flex *******************************************************************************************************/
-
-.edit-post-visual-editor {
-  .sectionblock-section {
-
-    &.sectionblock-flex {
-      .sectionblock-section-items {
-        display: block;
-
-        .editor-inner-blocks {
-          > .editor-block-list__layout {
-            display: flex;
-            flex-wrap: wrap;
-
-            > * {
-              flex-basis: 100%;
-              width: 100%;
-              min-width: 100%;
-              max-width: 100%;
-            }
-          }
         }
       }
     }

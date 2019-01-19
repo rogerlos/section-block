@@ -7,28 +7,40 @@ use \sectionblock\util as UTIL;
 /**
  * Background classes string creator.
  *
- * @param array $BG - PROPS array, as seen in BG.js
+ * @param array $BG   - PROPS array, as seen in BG.js
+ * @param array $ATTS - Attributes array from WP
  *
- * @return string
+ * @return array
  */
-function classes( $BG ) {
+function classes( $BG, $ATTS ) {
 	
 	global $SBLCK;
 	
-	$typ = type( $BG );
-	$ret = '';
+	$typ = type( $BG, $ATTS );
+	$ret = [];
 	
 	if ( $typ ) {
 		
-		$ret .= ' has-bg';
-		$ret .= 'blend' === $typ ? ' has-bg-image has-bg-blend has-bg-color' : '';
-		$ret .= 'image' === $typ ? ' has-bg-image' : '';
-		$ret .= 'color' === $typ ? ' has-bg-color' : '';
+		$ret[] = 'has-bg';
+		
+		switch( $typ ) {
+			case 'blend':
+				$ret[] = 'has-bg-image';
+				$ret[] = 'has-bg-blend';
+				$ret[] = 'has-bg-color';
+				break;
+			case 'image':
+				$ret[] = 'has-bg-image';
+				break;
+			case 'color':
+				$ret[] = 'has-bg-color';
+				break;
+		}
 		
 		if ( ! empty( $BG['color'] ) ) {
 			
 			$bgcolorclass = '';
-			$colors       = apply_filters( 'sectionblock_background_color_array', $SBLCK->get( 'colors' ), $BG );
+			$colors       = apply_filters( 'sectionblock_background_color_array', $SBLCK->get( 'colors' ), $BG, $ATTS );
 			
 			if ( ! empty( $colors ) ) {
 				foreach ( $colors as $col ) {
@@ -37,33 +49,37 @@ function classes( $BG ) {
 						break;
 					}
 				}
-			} else {
+			}
+			
+			if ( empty ( $bgcolorclass ) ) {
 				$bgcolorclass = '-' . str_replace( '#', '', $BG['color']['hex'] );
 			}
 			
-			$ret .= $bgcolorclass;
+			$ret[] = 'has-bg-color' . $bgcolorclass;
 		}
 	}
 	
-	$filtered = apply_filters( 'sectionblock_background_classes', $ret, $BG );
+	$filtered = apply_filters( 'sectionblock_background_classes_array', $ret, $BG, $ATTS );
+	$ret = is_array( $filtered ) ? $filtered : $ret;
 	
-	return is_string( $filtered ) ? $filtered : $ret;
+	return $ret;
 }
 
 /**
  * Should return the ghost background chosen. Checks the theme's /ghost/ directory for file if passed path
  * does not work.
  *
- * @param array $BG - PROPS array, as seen in BG.js
+ * @param array $BG   - PROPS array, as seen in BG.js
+ * @param array $ATTS - Attributes array from WP
  *
  * @return string
  */
-function ghost( $BG ) {
+function ghost( $BG, $ATTS ) {
 	
 	$h = '';
 	$S = 'sectionblock_ghost';
 	
-	$ghost = apply_filters( 'sectionblock_ghost_attr', $BG['ghost'], $BG );
+	$ghost = apply_filters( 'sectionblock_ghost_array', $BG['ghost'], $BG, $ATTS );
 	
 	if ( empty( $ghost['img'] ) ) {
 		return $h;
@@ -74,7 +90,7 @@ function ghost( $BG ) {
 	$i = ! $i && file_exists( get_stylesheet_directory() . '/ghost/' . $BG['ghost']['img'] ) ?
 		get_stylesheet_directory() . '/ghost/' . $BG['ghost']['img'] : $i;
 	
-	$i = apply_filters( 'sectionblock_ghost_img_path', $i, $ghost );
+	$i = apply_filters( 'sectionblock_ghost_img_path', $i, $ghost, $BG, $ATTS );
 	
 	if ( ! $i ) {
 		return $h;
@@ -82,10 +98,10 @@ function ghost( $BG ) {
 	
 	$where = ! empty( $BG['ghost']['pos'] ) ? $BG['ghost']['pos'] : 'right';
 	
-	$cls = (string) apply_filters( 'sectionblock_ghost_classes', $S . ' ' . $S . '-' . $where, $ghost );
+	$cls = apply_filters( 'sectionblock_ghost_classes', [ $S,  $S . '-' . $where ], $ghost, $BG, $ATTS );
 	
-	$h .= '<div class="' . $cls . '">';
-	$h .= (string) apply_filters( 'sectionblock_ghost_img_tag', '<img src="' . $i . '">', $ghost );
+	$h .= '<div class="' . implode( ' ', $cls ) . '">';
+	$h .= (string) apply_filters( 'sectionblock_ghost_img_tag', '<img src="' . $i . '">', $ghost, $BG, $ATTS );
 	$h .= '</div>';
 	
 	return $h;
@@ -95,11 +111,12 @@ function ghost( $BG ) {
 /**
  * Create CSS background-size string
  *
- * @param array $BG - PROPS array, as seen in BG.js
+ * @param array $BG   - PROPS array, as seen in BG.js
+ * @param array $ATTS - Attributes array from WP
  *
  * @return string
  */
-function size( $BG ) {
+function size( $BG, $ATTS ) {
 	
 	$ret = '';
 	
@@ -113,38 +130,35 @@ function size( $BG ) {
 	$ret = $x && $y ? $x . ' ' . $y : $ret;
 	$ret = $x ? $x : $ret;
 	
-	return $ret;
+	return apply_filters( 'sectionblock_background_size', $ret, $BG, $ATTS );
 }
 
 /**
  * Background inline styles, contingent on there being a BG image.
  *
- * @param array $BG - PROPS array, as seen in BG.js
+ * @param array $BG   - PROPS array, as seen in BG.js
+ * @param array $ATTS - Attributes array from WP
  *
- * @return string
+ * @return array
  */
-function style( $BG ) {
+function style( $BG, $ATTS ) {
 	
-	$ret     = '';
-	$over    = style_overlay( $BG );
+	$over    = style_overlay( $BG, $ATTS );
 	$blend   = [];
 	$overlay = [];
 	$img     = ! empty( $BG['image'] ) ? $BG['image'] : [ 'url' => '' ];
 	
 	/*
-	 * Fix blend if wrong
+	 * Fix blend configuration if a string
 	 */
 	if ( is_string( $BG['blend'] ) ) {
-		$BG['blend'] = [
-			'type'       => $BG['blend'],
-			'desaturate' => 0,
-		];
+		$BG['blend'] = [ 'type' => $BG['blend'], 'desaturate' => 0 ];
 	}
 	
 	/*
 	 * Sizing
 	 */
-	$size = size( $BG );
+	$size = size( $BG, $ATTS );
 	$size = ! $size && ! empty( $BG['size']['keyword'] ) ? $BG['size']['keyword'] : $size;
 	
 	/*
@@ -185,39 +199,45 @@ function style( $BG ) {
 	}
 	
 	/*
-	 * Returned properties
+	 * Inline styles array
 	 */
-	$ret .= ! empty( $overlay ) ? 'background-image:' . implode( ',', $overlay ) . ';' : '';
-	$ret .= $size ? 'background-size:' . $size . ';' : '';
-	$ret .= ! empty( $BG['repeat'] ) ? 'background-repeat:' . $BG['repeat'] . ';' : '';
-	$ret .= ! empty( $BG['attachment'] ) ? 'background-attachment:' . $BG['attachment'] . ';' : '';
-	$ret .= ! empty( $blend ) ? 'background-blend-mode:' . implode( ',', $blend ) . ';' : '';
-	$ret .= ! empty( $color ) ? 'background-color:' . $color . ';' : '';
-	$ret .= ! empty( $BG['position'] ) ?
-		'background-position:' . $BG['position']['x'] . ' ' . $BG['position']['y'] . ';' : '';
+	$ret = [
+		'background-image' => $overlay,
+		'background-size' => $size,
+		'background-repeat' => $BG['repeat'],
+		'background-attachment' => $BG['attachment'],
+		'background-blend-mode' => $blend,
+		'background-color' => $color,
+		'background-position' => $BG['position']['x'] . ' ' . $BG['position']['y'],
+	];
 	
-	$filtered = apply_filters( 'sectionblock_background_inline_styles', $ret, $BG );
+	$filtered = apply_filters( 'sectionblock_background_style_array', $ret, $BG, $ATTS );
 	
-	return $filtered ? ' style="' . $filtered . '"' : '';
+	return is_array( $filtered ) ? $filtered  : $ret;
 }
 
 /**
  * Create gradient overlay to go over background image, if configured
  *
- * @param array $BG - PROPS array, as seen in BG.js
+ * @param array $BG   - PROPS array, as seen in BG.js
+ * @param array $ATTS - Attributes array from WP
  *
  * @return array
  */
-function style_overlay( $BG ) {
+function style_overlay( $BG, $ATTS ) {
 	
 	global $SBLCK;
-	
-	$O = $BG['overlay'];
 	
 	$ret = [
 		'over'  => [],
 		'blend' => [],
 	];
+	
+	if ( empty( $BG['overlay'] ) ) {
+		return $ret;
+	}
+	
+	$O = $BG['overlay'];
 	
 	if ( empty( $O['type'] ) || empty( $O['color'] ) ) {
 		return $ret;
@@ -259,7 +279,7 @@ function style_overlay( $BG ) {
 			break;
 	}
 	
-	$P = apply_filters( 'sectionblock_overlay_params', $P, $BG );
+	$P = apply_filters( 'sectionblock_overlay_params', $P, $BG, $ATTS );
 	
 	switch ( $P['type'] ) {
 		
@@ -282,26 +302,28 @@ function style_overlay( $BG ) {
 			break;
 	}
 	
-	return apply_filters( 'sectionblock_image_overlay_styles', $ret, $BG );
+	return apply_filters( 'sectionblock_image_overlay_styles', $ret, $BG, $ATTS );
 }
 
 /**
  * Background Type, determined by chosen options
  *
- * @param array $BG - PROPS array, as seen in BG.js
+ * @param array $BG   - PROPS array, as seen in BG.js
+ * @param array $ATTS - Attributes array from WP
  *
  * @return null|string
  */
-function type( $BG ) {
+function type( $BG, $ATTS ) {
 	
 	$type = NULL;
-	if ( ! empty( $BG['color'] ) && ! empty( $BG['image']['url'] ) && ! empty( $BG['blend'] ) ) {
+	
+	if ( ! empty( $BG['color']['hex'] ) && ! empty( $BG['image']['url'] ) && ! empty( $BG['blend'] ) ) {
 		$type = 'blend';
 	} else if ( ! empty( $BG['image']['url'] ) ) {
 		$type = 'image';
-	} else if ( ! empty( $BG['color'] ) ) {
+	} else if ( ! empty( $BG['color']['hex'] ) ) {
 		$type = 'color';
 	}
 	
-	return $type;
+	return apply_filters( 'sectionblock_background_type', $type, $BG, $ATTS );
 }

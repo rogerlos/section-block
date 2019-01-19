@@ -1,7 +1,3 @@
-/* Allowing some space to click on section ***************************************************************************/
-.edit-post-visual-editor .sectionblock-section {
-  border: 2px dotted #ccc; }
-
 /* Section widths ****************************************************************************************************/
 .edit-post-visual-editor .editor-block-list__block[data-type="sectionblock/section"][data-align="wide"] .editor-block-list__layout .editor-block-list__block, .edit-post-visual-editor .editor-block-list__block[data-type="sectionblock/section"][data-align="full"] .editor-block-list__layout .editor-block-list__block {
   max-width: 100%;
@@ -17,18 +13,6 @@
   .edit-post-visual-editor .editor-block-list__block[data-type="sectionblock/section"][data-align="left"] .sectionblock-section .sectionblock-section, .edit-post-visual-editor .editor-block-list__block[data-type="sectionblock/section"][data-align="right"] .sectionblock-section .sectionblock-section {
     max-width: 100%;
     margin-right: 0; }
-
-/* Adjust flex *******************************************************************************************************/
-.edit-post-visual-editor .sectionblock-section.sectionblock-flex .sectionblock-section-items {
-  display: block; }
-  .edit-post-visual-editor .sectionblock-section.sectionblock-flex .sectionblock-section-items .editor-inner-blocks > .editor-block-list__layout {
-    display: flex;
-    flex-wrap: wrap; }
-    .edit-post-visual-editor .sectionblock-section.sectionblock-flex .sectionblock-section-items .editor-inner-blocks > .editor-block-list__layout > * {
-      flex-basis: 100%;
-      width: 100%;
-      min-width: 100%;
-      max-width: 100%; }
 
 /* Kill recursive floats *********************************************************************************************/
 .edit-post-visual-editor .sectionblock-section-items .editor-block-list__block-edit {

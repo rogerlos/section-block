@@ -56,7 +56,6 @@
         edit       : function ( props ) {
 
             const saveProp = ( key, val ) => {
-
                 props.setAttributes( { [ key ] : val } );
             };
 

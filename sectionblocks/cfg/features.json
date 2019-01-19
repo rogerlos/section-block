@@ -1,0 +1,22 @@
+[
+  {
+    "key" :   "i1",
+    "label" : "No Style",
+    "value" : ""
+  },
+  {
+    "key" :   "i2",
+    "label" : "Top Image",
+    "value" : "sectionblock-feature-top-image"
+  },
+  {
+    "key" :   "i3",
+    "label" : "Big Image",
+    "value" : "sectionblock-feature-big-image"
+  },
+  {
+    "key" :   "i4",
+    "label" : "Floated Image",
+    "value" : "sectionblock-feature-float-image"
+  }
+]
