@@ -123,14 +123,23 @@
             };
 
             const saveBG = ( key, val, parent ) => {
-                let b = props.attributes.background;
-                if ( typeof ( parent ) !== 'undefined' ) {
+
+                let b = props.attributes.itemBackground ? props.attributes.itemBackground : SBLCK.BG.GetProps();
+
+                if ( typeof( parent ) !== 'undefined' ) {
+
+                    if ( ! b[ parent ].hasOwnProperty( key ) ) {
+                        let check = SBLCK.BG.GetProps();
+                        if ( check[ parent ].hasOwnProperty( key ) ) {
+                            b[ parent ] = check[ parent ];
+                        }
+                    }
                     b[ parent ][ key ] = val;
-                } else {
+                } else  {
                     b[ key ] = val;
                 }
-                props.setAttributes( { background : b } );
-                props.setAttributes( { updated : Date.now() } );
+                props.setAttributes( { itemBackground: b } );
+                props.setAttributes( { updated: Date.now() } );
             };
 
             const onPostChange = val => {
@@ -165,7 +174,6 @@
             let itemPostContent = typeof ( props.attributes.itemPostContent ) === 'undefined' ?
                 CFG.posts.emptypost : props.attributes.itemPostContent;
 
-            let iClass   = props.attributes.iClass;
             let itemPost = props.attributes.itemPost;
 
             let itemLink    = props.attributes.itemLink;
@@ -198,6 +206,12 @@
 
             let itemBackground = props.attributes.itemBackground ? props.attributes.itemBackground : SBLCK.BG.GetProps();
 
+            let iClass = props.attributes.iClass ?
+                props.attributes.iClass :
+                onTextChange( 'iClass', CFG.selects.iClass[ 0 ].value );
+
+            let advanced = props.attributes.className ? props.attributes.className : '';
+
             DY.posts = SBLCK.posts;
 
             if ( itemPost && itemPostContent.id !== itemPost && ! DY.fetching ) onPostChange( itemPost );
@@ -208,7 +222,7 @@
                     SBIS.wrap.tagName,
                     {
                         key       : SBIS.wrap.className + RND,
-                        className : SBIS.wrap.className + ' ' + SBLCK.BG.Classes( itemBackground ),
+                        className : SBLCK.BG.Classes( itemBackground ) + classes( iClass, advanced ),
                         style     : SBLCK.BG.InlineStyle( 'item', itemBackground )
                     },
                     EL(
@@ -320,12 +334,12 @@
                                 add_editor_image( itemImage )
                             )
                         ),
-                        EL(
-                            SBIS.text.tagName,
-                            {
-                                key       : SBIS.text.className + RND,
-                                className : SBIS.text.className,
-                            },
+                //        EL(
+                //            SBIS.text.tagName,
+                //            {
+                //                key       : SBIS.text.className + RND,
+                //                className : SBIS.text.className,
+                //            },
                             isSelected || itemTitle ?
                                 EL(
                                     SBIS.headline.tagName,
@@ -425,7 +439,7 @@
                                         }
                                     )
                                 ) : null
-                        )
+                //        )
                     )
                 )
             )
@@ -475,6 +489,23 @@
                 )
             }
         )
+    }
+
+    /**
+     * Add classes to wrapper
+     *
+     * @param iClass
+     * @param advanced
+     * @returns {*}
+     */
+    function classes( iClass, advanced ) {
+
+        let l = SBIS.wrap.className;
+
+        l += iClass ? ' '  + iClass : '';
+        l += advanced ? ' ' + advanced : '';
+
+        return l;
     }
 
 } )( wp.blocks, wp.editor, wp.components, wp.element.createElement, wp.apiFetch );

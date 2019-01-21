@@ -316,7 +316,7 @@
       "struct" : {
         "wrap" :       {
           "tagName" :   "div",
-          "className" : "sectionblock-item"
+          "className" : "sectionblock-feature"
         },
         "inner" :      {
           "tagName" :   "div",

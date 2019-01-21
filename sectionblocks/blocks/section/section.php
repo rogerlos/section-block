@@ -2,6 +2,8 @@
 
 namespace sectionblock\section;
 
+use \sectionblock\util as UTIL;
+
 function render() {
 	
 	global $SBLCK;
@@ -16,11 +18,11 @@ function render() {
 	
 	// discover permissions for display from config, apply to background props
 	$USE = apply_filters( $S_ . '_use', $SBLCK->get( 'use.section' ), $atts, $content );
-	$BG  = background_props( $S_, $atts, $content, $USE );
+	$BG  = UTIL\background_props( $atts, $USE, $content, 'section' );
 	
 	// add inline styles
 	$styles_array = \sectionblock\background\style( $BG, $atts );
-	$STY = inline_style_string( $styles_array, $atts );
+	$STY = UTIL\inline_style_string( $styles_array, $atts, 'section' );
 	
 	// open wrapper
 	$html = '<div class="' . trim( implode( ' ', section_classes( $S, $S_, $BG, $atts, $USE ) ) ) . '"' . $STY . '>';
@@ -76,10 +78,6 @@ function section_classes( $S, $S_, $BG, $atts, $USE ) {
 		$CLS = array_merge( $CLS, explode( ' ', $atts['className'] ) );
 	}
 	
-	if ( ! empty( $atts['bFlex'] ) && $atts['bFlex'] && $USE['bFlex'] ) {
-		$CLS[] = 'sectionblock-flex';
-	}
-	
 	// add background classes
 	$bgc = \sectionblock\background\classes( $BG, $atts );
 	
@@ -114,71 +112,4 @@ function item_classes( $S, $S_, $atts ) {
 	
 	// catch bad filtering
 	return is_array( $filtered ) ? $filtered : $ICLS;
-}
-
-/**
- * Removes background properties which are not allowed via the 'use' array
- *
- * @param string $S_
- * @param array $atts
- * @param string $content
- * @param array $USE
- *
- * @return array
- */
-function background_props( $S_, $atts, $content, $USE ) {
-	
-	global $SBLCK;
-	
-	$atts['background'] = empty( $atts['background'] ) ? $SBLCK->get( 'background.props' ) : $atts['background'];
-	
-	$BG  = apply_filters( $S_ . '_background_array_raw', $atts['background'], $atts, $content );
-	
-	foreach ( $USE['background'] as $prop => $use ) {
-		
-		if ( $prop === 'colorinline' && $use && ! empty( $BG['color'] ) && $USE['background']['color'] ) {
-			$BG['colorinline'] = $BG['color'];
-		} else if ( ! $use ) {
-			$BG[ $prop ] = NULL;
-		}
-	}
-	
-	$filtered = apply_filters( $S_ . '_background_array_final', $BG, $atts );
-	
-	return is_array( $filtered ) ? $filtered : $BG;
-}
-
-/**
- * Create inline style string.
- *
- * @param array $styles - keys are props, vals which are arrays imploded with ','
- * @param array $atts
- *
- * @return string
- */
-function inline_style_string( $styles, $atts ) {
-	
-	if ( ! is_array( $styles ) || empty( $styles ) ) {
-		return '';
-	}
-	
-	$ret = '';
-	
-	foreach( $styles as $prop => $val ) {
-		
-		if ( empty( $val ) ) {
-			continue;
-		}
-		
-		if ( is_array( $val ) ) {
-			$val = implode( ',', $val );
-		}
-		
-		$ret .= $prop . ':' . $val . ';';
-	}
-	
-	$ret      = ' style="' . $ret . '"';
-	$filtered = apply_filters( 'sectionblock_section_inline_style_string', $ret, $styles, $atts );
-	
-	return is_string( $filtered ) ? $filtered : $ret;
 }
