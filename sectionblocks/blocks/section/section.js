@@ -41,12 +41,12 @@
     const { PanelBody, SelectControl }                                        = COMP;
     const { AlignmentToolbar, BlockControls, InnerBlocks, InspectorControls } = ED;
 
-    const CFG  = SBLCK.CFG;
-    const BKT  = CFG.blocks.section;
-    const BKTA = BKT.cfg.attributes;
-    const USE  = CFG.use.section;
-    const SEL  = CFG.selects;
-    const PANEL = SBLCK.PANEL;
+    const CFG       = SBLCK.CFG;
+    const BKT       = CFG.blocks.section;
+    const BKTA      = BKT.cfg.attributes;
+    const USE       = CFG.use.section;
+    const SEL       = CFG.selects;
+    const PANEL     = SBLCK.PANEL;
     const INSPECTOR = SBLCK.INSPECTOR;
 
     registerBlockType( 'sectionblock/section', {
@@ -61,22 +61,22 @@
 
             const saveBG = ( key, val, parent ) => {
 
-                let b = props.attributes.background ? props.attributes.background : SBLCK.BG.GetProps();
+                let b = props.attributes.background ? props.attributes.background : bgProps();
 
-                if ( typeof( parent ) !== 'undefined' ) {
+                if ( typeof ( parent ) !== 'undefined' ) {
 
                     if ( ! b[ parent ].hasOwnProperty( key ) ) {
-                        let check = SBLCK.BG.GetProps();
+                        let check = bgProps();
                         if ( check[ parent ].hasOwnProperty( key ) ) {
                             b[ parent ] = check[ parent ];
                         }
                     }
                     b[ parent ][ key ] = val;
-                } else  {
+                } else {
                     b[ key ] = val;
                 }
-                props.setAttributes( { background: b } );
-                props.setAttributes( { updated: Date.now() } );
+                props.setAttributes( { background : b } );
+                props.setAttributes( { updated : Date.now() } );
             };
 
             let alignment = props.attributes.alignment ? props.attributes.alignment : saveProp( 'alignment', 'center' );
@@ -92,12 +92,11 @@
 
             let advanced = props.attributes.className ? props.attributes.className : '';
 
-            let bFlex = !! props.attributes.bFlex;
+            let bFlex = ! ! props.attributes.bFlex;
 
-            let background = props.attributes.background ? props.attributes.background : SBLCK.BG.GetProps();
+            let background = props.attributes.background ? props.attributes.background : bgProps();
 
             return EL(
-
                 BKT.cfg.tagName,
                 {
                     className : SBLCK.BG.Classes( background ) + addClasses( bClass, SEL.bClass, advanced, bFlex ),
@@ -183,7 +182,7 @@
         itemType = ! itemType && showB ? SEL.bClass[ 0 ][ 'value' ] : itemType;
 
         let flex = bFlex ? ' sectionblock-flex' : '';
-        let adv = advanced ? ' ' + advanced : '';
+        let adv  = advanced ? ' ' + advanced : '';
 
         return ' wp-block-sectionblock-section sectionblock-section ' + itemType + adv + flex;
     }
@@ -196,7 +195,7 @@
      */
     function innerClasses( alignment ) {
 
-        return typeof( alignment ) !== 'undefined' ? ' align-items-' + alignment : '';
+        return typeof ( alignment ) !== 'undefined' ? ' align-items-' + alignment : '';
     }
 
     /**
@@ -215,6 +214,15 @@
         }
 
         return i;
+    }
+
+    /**
+     * Method to avoid reference to root bg props across all objects.
+     *
+     * @returns {any}
+     */
+    function bgProps() {
+        return JSON.parse( JSON.stringify( SBLCK.CFG.background.props ) );
     }
 
 } )( wp.blocks, wp.editor, wp.components, wp.element.createElement );

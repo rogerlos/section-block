@@ -124,22 +124,22 @@
 
             const saveBG = ( key, val, parent ) => {
 
-                let b = props.attributes.itemBackground ? props.attributes.itemBackground : SBLCK.BG.GetProps();
+                let b = props.attributes.itemBackground ? props.attributes.itemBackground : bgProps();
 
-                if ( typeof( parent ) !== 'undefined' ) {
+                if ( typeof ( parent ) !== 'undefined' ) {
 
                     if ( ! b[ parent ].hasOwnProperty( key ) ) {
-                        let check = SBLCK.BG.GetProps();
+                        let check = bgProps();
                         if ( check[ parent ].hasOwnProperty( key ) ) {
                             b[ parent ] = check[ parent ];
                         }
                     }
                     b[ parent ][ key ] = val;
-                } else  {
+                } else {
                     b[ key ] = val;
                 }
-                props.setAttributes( { itemBackground: b } );
-                props.setAttributes( { updated: Date.now() } );
+                props.setAttributes( { itemBackground : b } );
+                props.setAttributes( { updated : Date.now() } );
             };
 
             const onPostChange = val => {
@@ -204,7 +204,7 @@
 
             let isSelected = props.isSelected;
 
-            let itemBackground = props.attributes.itemBackground ? props.attributes.itemBackground : SBLCK.BG.GetProps();
+            let itemBackground = props.attributes.itemBackground ? props.attributes.itemBackground : bgProps();
 
             let iClass = props.attributes.iClass ?
                 props.attributes.iClass :
@@ -334,112 +334,112 @@
                                 add_editor_image( itemImage )
                             )
                         ),
-                //        EL(
-                //            SBIS.text.tagName,
-                //            {
-                //                key       : SBIS.text.className + RND,
-                //                className : SBIS.text.className,
-                //            },
-                            isSelected || itemTitle ?
+                        //        EL(
+                        //            SBIS.text.tagName,
+                        //            {
+                        //                key       : SBIS.text.className + RND,
+                        //                className : SBIS.text.className,
+                        //            },
+                        isSelected || itemTitle ?
+                            EL(
+                                SBIS.headline.tagName,
+                                {
+                                    key       : SBIS.headline.className + RND,
+                                    className : SBIS.headline.className,
+                                },
                                 EL(
-                                    SBIS.headline.tagName,
+                                    RichText,
                                     {
-                                        key       : SBIS.headline.className + RND,
-                                        className : SBIS.headline.className,
+                                        tagName                : SBA.itemTitle.tagName,
+                                        key                    : SBA.itemTitle.className + RND,
+                                        className              : props.className + ' ' + SBA.itemTitle.className,
+                                        value                  : itemTitle,
+                                        placeholder            : SBA.itemTitle.placeholder,
+                                        multiline              : SBA.itemTitle.multiline,
+                                        keepPlaceholderOnFocus : true,
+                                        onChange               : val => {
+                                            onTextChange( 'itemTitle', val )
+                                        }
+                                    }
+                                )
+                            ) : null,
+                        isSelected || itemLabel ?
+                            EL(
+                                SBIS.label.tagName,
+                                {
+                                    key       : SBIS.label.className,
+                                    className : SBIS.label.className,
+                                },
+                                EL(
+                                    'div',
+                                    {
+                                        key       : SBA.itemLabel.className + RND,
+                                        className : SBA.itemLabel.className,
                                     },
                                     EL(
                                         RichText,
                                         {
-                                            tagName                : SBA.itemTitle.tagName,
-                                            key                    : SBA.itemTitle.className + RND,
-                                            className              : props.className + ' ' + SBA.itemTitle.className,
-                                            value                  : itemTitle,
-                                            placeholder            : SBA.itemTitle.placeholder,
-                                            multiline              : SBA.itemTitle.multiline,
+                                            tagName                : SBA.itemLabel.tagName,
+                                            key                    : SBA.itemLabel.className + RND,
+                                            className              : props.className,
+                                            value                  : itemLabel,
+                                            placeholder            : SBA.itemLabel.placeholder,
+                                            multiline              : SBA.itemLabel.multiline,
                                             keepPlaceholderOnFocus : true,
                                             onChange               : val => {
-                                                onTextChange( 'itemTitle', val )
+                                                onTextChange( 'itemLabel', val )
                                             }
                                         }
                                     )
-                                ) : null,
-                            isSelected || itemLabel ?
+                                )
+                            ) : null,
+                        isSelected || itemText ?
+                            EL(
+                                SBIS.excerpt.tagName,
+                                {
+                                    key       : SBIS.excerpt.className,
+                                    className : SBIS.excerpt.className,
+                                },
                                 EL(
-                                    SBIS.label.tagName,
+                                    RichText,
                                     {
-                                        key       : SBIS.label.className,
-                                        className : SBIS.label.className,
-                                    },
-                                    EL(
-                                        'div',
-                                        {
-                                            key       : SBA.itemLabel.className + RND,
-                                            className : SBA.itemLabel.className,
-                                        },
-                                        EL(
-                                            RichText,
-                                            {
-                                                tagName                : SBA.itemLabel.tagName,
-                                                key                    : SBA.itemLabel.className + RND,
-                                                className              : props.className,
-                                                value                  : itemLabel,
-                                                placeholder            : SBA.itemLabel.placeholder,
-                                                multiline              : SBA.itemLabel.multiline,
-                                                keepPlaceholderOnFocus : true,
-                                                onChange               : val => {
-                                                    onTextChange( 'itemLabel', val )
-                                                }
-                                            }
-                                        )
-                                    )
-                                ) : null,
-                            isSelected || itemText ?
-                                EL(
-                                    SBIS.excerpt.tagName,
-                                    {
-                                        key       : SBIS.excerpt.className,
-                                        className : SBIS.excerpt.className,
-                                    },
-                                    EL(
-                                        RichText,
-                                        {
-                                            tagName                : SBA.itemText.tagName,
-                                            key                    : SBA.itemText.className + RND,
-                                            className              : props.className + ' ' + SBA.itemText.className,
-                                            placeholder            : SBA.itemText.placeholder,
-                                            keepPlaceholderOnFocus : true,
-                                            value                  : itemText,
-                                            multiline              : SBA.itemText.multiline,
-                                            onChange               : val => {
-                                                onTextChange( 'itemText', val )
-                                            }
-                                        },
-                                    )
-                                ) : null,
-                            isSelected || itemButton ?
-                                EL(
-                                    SBIS.button.tagName,
-                                    {
-                                        key       : SBIS.button.className,
-                                        className : SBIS.button.className,
-                                    },
-                                    EL(
-                                        RichText,
-                                        {
-                                            tagName                : SBA.itemButton.tagName,
-                                            key                    : SBA.itemButton.className + RND,
-                                            className              : SBA.itemButton.className,
-                                            value                  : itemButton,
-                                            placeholder            : SBA.itemButton.placeholder,
-                                            multiline              : SBA.itemButton.multiline,
-                                            keepPlaceholderOnFocus : true,
-                                            onChange               : val => {
-                                                onTextChange( 'itemButton', val )
-                                            }
+                                        tagName                : SBA.itemText.tagName,
+                                        key                    : SBA.itemText.className + RND,
+                                        className              : props.className + ' ' + SBA.itemText.className,
+                                        placeholder            : SBA.itemText.placeholder,
+                                        keepPlaceholderOnFocus : true,
+                                        value                  : itemText,
+                                        multiline              : SBA.itemText.multiline,
+                                        onChange               : val => {
+                                            onTextChange( 'itemText', val )
                                         }
-                                    )
-                                ) : null
-                //        )
+                                    },
+                                )
+                            ) : null,
+                        isSelected || itemButton ?
+                            EL(
+                                SBIS.button.tagName,
+                                {
+                                    key       : SBIS.button.className,
+                                    className : SBIS.button.className,
+                                },
+                                EL(
+                                    RichText,
+                                    {
+                                        tagName                : SBA.itemButton.tagName,
+                                        key                    : SBA.itemButton.className + RND,
+                                        className              : SBA.itemButton.className,
+                                        value                  : itemButton,
+                                        placeholder            : SBA.itemButton.placeholder,
+                                        multiline              : SBA.itemButton.multiline,
+                                        keepPlaceholderOnFocus : true,
+                                        onChange               : val => {
+                                            onTextChange( 'itemButton', val )
+                                        }
+                                    }
+                                )
+                            ) : null
+                        //        )
                     )
                 )
             )
@@ -502,10 +502,19 @@
 
         let l = SBIS.wrap.className;
 
-        l += iClass ? ' '  + iClass : '';
+        l += iClass ? ' ' + iClass : '';
         l += advanced ? ' ' + advanced : '';
 
         return l;
+    }
+
+    /**
+     * Method to avoid reference to root bg props across all objects.
+     *
+     * @returns {any}
+     */
+    function bgProps() {
+        return JSON.parse( JSON.stringify( SBLCK.CFG.background.props ) );
     }
 
 } )( wp.blocks, wp.editor, wp.components, wp.element.createElement, wp.apiFetch );

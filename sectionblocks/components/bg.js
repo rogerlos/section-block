@@ -50,9 +50,9 @@
     const { Fragment }                                                                         = wp.element;
 
     const EL   = wp.element.createElement;
-    const USE  = SBLCK.CFG.use;
+    const USE  = Object.create( SBLCK.CFG.use );
     const PFX  = 'sectionblock-';
-    const VARS = SBLCK.CFG.background;
+    const VARS = Object.create( SBLCK.CFG.background );
 
     SBLCK.BG = {};
 
@@ -228,15 +228,6 @@
                 }
             )
         )
-    };
-
-    /**
-     * Returns an empty PROPS object
-     *
-     * @returns {object}
-     */
-    SBLCK.BG.GetProps = function () {
-        return SBLCK.CFG.background.props;
     };
 
     /**
